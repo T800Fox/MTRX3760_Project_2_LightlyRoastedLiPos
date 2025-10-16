@@ -1,0 +1,195 @@
+<?xml version="1.0"?>
+<sdf version="1.8">
+  <world name="maze08_world">
+    <physics type="ode">
+      <real_time_update_rate>1000.0</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>150</iters>
+          <precon_iters>0</precon_iters>
+          <sor>1.400000</sor>
+          <use_dynamic_moi_rescaling>1</use_dynamic_moi_rescaling>
+        </solver>
+        <constraints>
+          <cfm>0.00001</cfm>
+          <erp>0.2</erp>
+          <contact_max_correcting_vel>2000.000000</contact_max_correcting_vel>
+          <contact_surface_layer>0.01000</contact_surface_layer>
+        </constraints>
+      </ode>
+    </physics>
+    <plugin
+      filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics">
+    </plugin>
+    <plugin
+      filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+    <plugin
+      filename="gz-sim-sensors-system"
+      name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin
+      filename="gz-sim-imu-system"
+      name="gz::sim::systems::Imu">
+    </plugin>
+
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground Plane</uri>
+    </include>
+
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
+    </include>
+
+
+    <!-- ===== Arena: width=12 (x -6..6), height=12 (y -6..6) ===== -->
+    <!-- Walls are 0.20 m thick, 1.0 m tall -->
+    <!-- Outer boundary -->
+    <model name="outer_top" static="true">
+      <pose>0 6 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>12 0.20 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>12 0.20 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <model name="outer_bottom" static="true">
+      <pose>0 -6 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>12 0.20 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>12 0.20 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <model name="outer_left" static="true">
+      <pose>-6 0 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.20 12 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.20 12 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <model name="outer_right" static="true">
+      <pose>6 0 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.20 12 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.20 12 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <!-- ===== Interior ===== -->
+
+    <!-- inner long top run, with a gap near the right (keeps "frame" look) -->
+    <model name="wall_top_inner" static="true">
+      <!-- spans from left inner margin to x≈3.8, leaving a right opening -->
+      <pose>-1.1 4.7 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>9.0 0.20 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>9.0 0.20 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <!-- right vertical (inner) that drops from top opening down -->
+    <model name="wall_right_vertical" static="true">
+      <pose>3.9 2.0 0.5 0 0 0</pose>  <!-- y-length ≈ 5.5 m -->
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.20 5.5 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.20 5.5 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <!-- center vertical post (creates the S-shaped route) -->
+    <model name="wall_center_vertical" static="true">
+      <pose>-0.7 1.3 0.5 0 0 0</pose> <!-- a bit left of center -->
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.20 4.0 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.20 4.0 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <!-- mid horizontal ledge (lower half), left->right -->
+    <model name="wall_mid_horizontal" static="true">
+      <pose>-0.9 -0.5 0.5 0 0 0</pose> <!-- centered slightly left -->
+      <link name="link">
+        <collision name="col"><geometry><box><size>7.8 0.20 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>7.8 0.20 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <!-- lower-right short block  -->
+    <model name="wall_bottom_right" static="true">
+      <pose>3.5 -3.4 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>2.0 0.20 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>2.0 0.20 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <!-- left vertical inside the frame -->
+    <model name="wall_left_vertical" static="true">
+      <pose>-4.3 -3.6 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.20 2.2 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.20 2.2 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <!-- bottom-left long block -->
+    <model name="wall_bottom_left" static="true">
+      <pose>-1.8 -4.7 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>6.5 0.20 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>6.5 0.20 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <!-- tiny top-left obstacle -->
+    <model name="wall_start_obstacle" static="true">
+      <pose>-4.6 5.0 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.9 0.9 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.9 0.9 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <!-- Start / Finish plates (floor markers) -->
+    <model name="start_plate" static="true">
+      <pose>5.3 -5.2 0.01 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.9 0.6 0.02</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.9 0.6 0.02</size></box></geometry>
+          <material><ambient>0.1 0.1 0.8 1</ambient></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="finish_plate" static="true">
+      <pose>-4.9 5.4 0.01 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.9 0.6 0.02</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.9 0.6 0.02</size></box></geometry>
+          <material><ambient>0.1 0.8 0.1 1</ambient></material>
+        </visual>
+      </link>
+    </model>
+
+    <gui fullscreen="0">
+      <camera name="user_camera">
+        <pose>0 0 14 0 1.57 0</pose>
+        <view_controller>orbit</view_controller>
+      </camera>
+    </gui>
+  </world>
+</sdf>

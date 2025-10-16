@@ -1,0 +1,9 @@
+# Goal
+float64 target_angle
+float64 prop_gain
+---
+# Result
+bool success
+---
+# Feedback
+float64 current_angle
