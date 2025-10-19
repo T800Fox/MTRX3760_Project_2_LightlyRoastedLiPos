@@ -1,4 +1,4 @@
-#include "mtrx3760_LRL_warehouseBot/sensing_node.hpp"
+#include "mtrx3760_LRL_warehousebot/sensing_node.hpp"
 
 using namespace std::chrono_literals;
 
