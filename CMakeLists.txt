@@ -14,12 +14,23 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(OpenCV REQUIRED core highgui aruco)
+find_package(cv_bridge REQUIRED)
+
+#---Message Generation---
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/DetectedMarker.msg"
+  DEPENDENCIES geometry_msgs sensor_msgs std_msgs
+)
 
 #---Include .hpp's---
 include_directories(include)
+include_directories(/usr/include/opencv4)
 install(DIRECTORY include/${PROJECT_NAME}/
           DESTINATION include/${PROJECT_NAME}
           FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+install(FILES include/camera_node.hpp
+        DESTINATION include)
 
 #---Add Launch and Config Files To Share---
 install(DIRECTORY launch
@@ -31,7 +42,7 @@ install(DIRECTORY config
 ament_export_dependencies(
   rclcpp 
   tf2
-  std_msgs sensor_msgs 
+  std_msgs sensor_msgs geometry_msgs
   rosidl_default_runtime)
 
 
@@ -39,13 +50,28 @@ ament_export_dependencies(
 add_executable(sensing src/sensing_node.cpp )
 ament_target_dependencies(sensing rclcpp std_msgs sensor_msgs tf2)
 
+add_executable(camera src/camera_node.cpp)
+ament_target_dependencies(camera rclcpp std_msgs sensor_msgs tf2 OpenCV cv_bridge)
+target_include_directories(camera PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+# Link messages to camera
+rosidl_get_typesupport_target(cpp_typesupport_target
+  ${PROJECT_NAME} rosidl_typesupport_cpp)
+target_link_libraries(camera "${cpp_typesupport_target}")
+
 
 #---Install Targets---
 install(TARGETS
   sensing
+  camera
   DESTINATION lib/${PROJECT_NAME}
 )
 
+# Install messages
+rosidl_export_interfaces(cmake)
 
 #---Build Testing Config.---
 if(BUILD_TESTING)
