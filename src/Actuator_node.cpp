@@ -88,6 +88,7 @@ robotActuator::~robotActuator()
     RCLCPP_INFO(this->get_logger(), "Robot Actuator node has been terminated");
 }
 
+// -------------------------Navigation command callback-------------------
 void robotActuator::nav_cmd_callback(const mtrx3760_oogway_mazesolver::msg::NavCommand::SharedPtr msg)
 {
     // Handle navigation command
