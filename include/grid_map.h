@@ -32,6 +32,9 @@ public:
     inline int cols() const { return m_cols; }
     inline double resolution() const { return m_res; }
 
+    // Debug export: write occupancy grid (0/1) as CSV rows
+    bool dumpCSV(const std::string& path) const;
+
     // Convert world mm (bottom-right origin) → grid cell
     Cell worldMmToCell(int x_mm_from_right, int y_mm_from_bottom) const;
 

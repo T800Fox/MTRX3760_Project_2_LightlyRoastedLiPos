@@ -59,6 +59,10 @@ public:
 
     std::vector<MotionCmd> buildCommands(std::optional<int> fixedInitialHeading = std::nullopt) const;
 
+    // Debug helpers
+    bool dumpMapCSV(const std::string& path) const { return map_.dumpCSV(path); }
+    GridMap::Cell worldMmToCell(int x_mm_from_right, int y_mm_from_bottom) const { return map_.worldMmToCell(x_mm_from_right, y_mm_from_bottom); }
+
     int rows() const { return map_.rows(); }
     int cols() const { return map_.cols(); }
     double resolution() const { return map_.resolution(); }

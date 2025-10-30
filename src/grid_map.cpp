@@ -106,3 +106,18 @@ void GridMap::inflateByCells(int radius_cells)
     m.swap(out);
 }
 
+bool GridMap::dumpCSV(const std::string& path) const
+{
+    if (m_rows <= 0 || m_cols <= 0) return false;
+    std::ofstream f(path);
+    if (!f.is_open()) return false;
+    for (int r = 0; r < m_rows; ++r) {
+        for (int c = 0; c < m_cols; ++c) {
+            if (c) f << ",";
+            f << (m[r * m_cols + c] ? 1 : 0);
+        }
+        f << "\n";
+    }
+    return true;
+}
+

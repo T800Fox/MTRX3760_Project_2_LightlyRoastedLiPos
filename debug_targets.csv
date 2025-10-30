@@ -1,0 +1,4 @@
+name,label,priority,x_mm,y_mm,row,col
+ItemA,A,2,300,1800,13,88
+ItemB,B,2,400,900,58,83
+ItemC,C,1,300,100,98,88

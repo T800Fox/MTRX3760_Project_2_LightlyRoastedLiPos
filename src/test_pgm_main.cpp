@@ -132,6 +132,25 @@ int main(int argc, char** argv) {
         else                           std::cout << "TRANSLATE " << c.value << "\n";
     }
 
+    // Debug: dump occupancy map and path CSVs
+    // Map: 0/1 grid
+    pc.dumpMapCSV("debug_map.csv");
+    // Path cells: lines of r,c
+    {
+        std::ofstream pf("debug_path_cells.csv");
+        for (const auto& cell : full) pf << cell.r << "," << cell.c << "\n";
+    }
+    // Targets: name,label,priority,x_mm,y_mm,row,col
+    {
+        std::ofstream tf("debug_targets.csv");
+        tf << "name,label,priority,x_mm,y_mm,row,col\n";
+        for (const auto& it : items) {
+            auto cell = pc.worldMmToCell(it.x_mm, it.y_mm);
+            tf << it.name << "," << it.label << "," << it.priority << ","
+               << it.x_mm << "," << it.y_mm << "," << cell.r << "," << cell.c << "\n";
+        }
+    }
+
     return 0;
 }
 
