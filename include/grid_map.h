@@ -18,6 +18,12 @@ public:
     // Load CSV with fixed rows/cols
     bool loadCSV(const std::string& path, int rows, int cols);
 
+    // Vector-based ingestion (row-major): values must be 0 (free) or 1 (occupied)
+    bool loadFromBinary(const std::vector<int>& data01, int rows, int cols, double resolution_m_per_cell);
+
+    // In-memory obstacle inflation by Euclidean disk radius in cells
+    void inflateByCells(int radius_cells);
+
     // Query
     // Add to GridMap public API
     bool loadCSV(const std::string& path);  // auto-detect rows/cols

@@ -12,6 +12,20 @@
 GridMap::GridMap(double resolution_m_per_cell)
 : m_rows(0), m_cols(0), m_res(resolution_m_per_cell), m() {}
 
+bool GridMap::loadFromBinary(const std::vector<int>& data01, int rows, int cols, double resolution_m_per_cell)
+{
+    if (rows <= 0 || cols <= 0) return false;
+    if (static_cast<int>(data01.size()) != rows * cols) return false;
+    m_rows = rows;
+    m_cols = cols;
+    m_res  = resolution_m_per_cell;
+    m.assign(rows * cols, 1);
+    for (int i = 0; i < rows * cols; ++i) {
+        m[i] = (data01[i] == 0) ? 0 : 1;
+    }
+    return true;
+}
+
 bool GridMap::loadCSV(const std::string& path, int rows, int cols)
 {
     m_rows = rows;
@@ -60,5 +74,35 @@ GridMap::Cell GridMap::worldMmToCell(int x_mm_from_right, int y_mm_from_bottom) 
     const int col = (m_cols - 1) - col_from_right;
     const int row = (m_rows - 1) - row_from_bottom;
     return { row, col };
+}
+
+void GridMap::inflateByCells(int radius_cells)
+{
+    if (radius_cells <= 0 || m_rows <= 0 || m_cols <= 0) return;
+    std::vector<int> out(m_rows * m_cols, 0);
+    const int rad = radius_cells;
+    const int R2 = rad * rad;
+    // Precompute stencil
+    std::vector<std::pair<int,int>> stencil;
+    stencil.reserve((2*rad+1)*(2*rad+1));
+    for (int dr = -rad; dr <= rad; ++dr) {
+        for (int dc = -rad; dc <= rad; ++dc) {
+            if (dr*dr + dc*dc <= R2) stencil.emplace_back(dr, dc);
+        }
+    }
+    for (int r = 0; r < m_rows; ++r) {
+        for (int c = 0; c < m_cols; ++c) {
+            if (m[r * m_cols + c] == 1) {
+                for (auto [dr, dc] : stencil) {
+                    const int rr = r + dr;
+                    const int cc = c + dc;
+                    if (rr >= 0 && rr < m_rows && cc >= 0 && cc < m_cols) {
+                        out[rr * m_cols + cc] = 1;
+                    }
+                }
+            }
+        }
+    }
+    m.swap(out);
 }
 
