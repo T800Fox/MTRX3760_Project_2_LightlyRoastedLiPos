@@ -1,6 +1,7 @@
 #include <camera_node.hpp>
 #include <cmath>
 #include <tf2/exceptions.h>
+#include <sensor_msgs/image_encodings.hpp>
 using namespace marker_tracking::msg;
 
 // ============================================================================
@@ -10,7 +11,7 @@ using namespace marker_tracking::msg;
 Camera::Camera(const std::string& node_name) : Node(node_name)
 {
     // Initialize publisher
-    marker_pub_ = create_publisher<DetectedMarker>("/detections/raw", 10);
+    marker_pub_ = create_publisher<MarkerPosition>("/detections/raw", 10);
     
     // Initialize subscribers
     // Use compressed images (better for bandwidth)
@@ -59,9 +60,6 @@ ArucoCamera::ArucoCamera() : Camera("oogway_camera_node")
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
     
-    // Initialize marker positions publisher (for controller functionality)
-    positions_pub_ = create_publisher<MarkerPositions>("/marker_positions", 10);
-    
     // Init members
     // Define the ArUco dictionary to use (4x4)
     dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
@@ -89,7 +87,7 @@ ArucoCamera::ArucoCamera() : Camera("oogway_camera_node")
     RCLCPP_INFO(this->get_logger(), "Camera matrix focal length: fx=%.2f, fy=%.2f", 
                 camera_matrix.at<double>(0,0), camera_matrix.at<double>(1,1));
     RCLCPP_INFO(this->get_logger(), "Confidence threshold: %.2f", confidence_threshold_);
-    RCLCPP_INFO(this->get_logger(), "Max observations per ID: %d", max_observations_per_id_);
+    RCLCPP_INFO(this->get_logger(), "Max observations per ID (deprecated): %d", max_observations_per_id_);
 }
 
 ArucoCamera::~ArucoCamera()
@@ -111,7 +109,7 @@ void ArucoCamera::processImage(const cv::Mat& frame)
         // Calculate pose for each detected marker
         std::vector<cv::Vec3d> rvecs, tvecs;
         cv::aruco::estimatePoseSingleMarkers(corners, tag_size, camera_matrix, dist_coeffs, rvecs, tvecs);
-        
+
         // Publish and draw distance vectors for each detected marker
         for(size_t i = 0; i < ids.size(); i++) {
             // Get the center of the marker
@@ -126,6 +124,24 @@ void ArucoCamera::processImage(const cv::Mat& frame)
             double distance = sqrt(translation[0]*translation[0] + 
                                  translation[1]*translation[1] + 
                                  translation[2]*translation[2]);
+            
+            // Track closest image: save first image or update if current is closer
+            bool is_closer = false;
+            auto dist_it = closest_distances_.find(ids[i]);
+            if (dist_it == closest_distances_.end()) {
+                // First observation for this marker ID
+                is_closer = true;
+                closest_distances_[ids[i]] = distance;
+                frame.copyTo(closest_images_[ids[i]]);
+                RCLCPP_INFO(this->get_logger(), "First detection of marker ID %d at distance %.3fm", ids[i], distance);
+            } else if (distance < dist_it->second) {
+                // Current observation is closer than previous closest
+                is_closer = true;
+                closest_distances_[ids[i]] = distance;
+                frame.copyTo(closest_images_[ids[i]]);
+                RCLCPP_INFO(this->get_logger(), "Closer image for marker ID %d: %.3fm (was %.3fm)", 
+                            ids[i], distance, dist_it->second);
+            }
             
             // Draw distance vector arrow
             cv::Point2f arrow_end = center + cv::Point2f(translation[0] * 100, translation[1] * 100);
@@ -169,21 +185,52 @@ void ArucoCamera::processImage(const cv::Mat& frame)
             cv::putText(frame, conf_text, center + cv::Point2f(10, 35), 
                        cv::FONT_HERSHEY_SIMPLEX, 0.4, conf_color, 1);
             
-            // Publish marker detection
-            auto detection_msg = DetectedMarker();
-            detection_msg.header.stamp = this->now();
-            detection_msg.header.frame_id = "base_link";
-            detection_msg.id = ids[i];
-            // Remap to desired convention: x=right(+), y=away(+), z=up(+)
-            detection_msg.position.x = translation[0];          // right (+)
-            detection_msg.position.y = translation[2];          // away (+)
-            detection_msg.position.z = -translation[1];         // up (+)
-            detection_msg.confidence = corner_confidence;
-            
-            marker_pub_->publish(detection_msg);
-            
             // Process marker through odometry fusion using remapped convention (x=right, y=away, z=up)
+            // This updates the stats needed for global position, covariance, and observation count
             process_marker_detection(ids[i], translation[0], translation[2], -translation[1], corner_confidence);
+            
+            // Get stats for this marker ID and publish every frame
+            auto stats_it = marker_stats_.find(ids[i]);
+            if (stats_it != marker_stats_.end() && stats_it->second.count > 0) {
+                const auto & stats = stats_it->second;
+                
+                // Calculate covariance_radius
+                double var_x = (stats.count > 1) ? (stats.m2_x / static_cast<double>(stats.count - 1)) : 0.0;
+                double var_y = (stats.count > 1) ? (stats.m2_y / static_cast<double>(stats.count - 1)) : 0.0;
+                double var_z = (stats.count > 1) ? (stats.m2_z / static_cast<double>(stats.count - 1)) : 0.0;
+                double covariance_radius = std::sqrt(std::max(0.0, var_x + var_y + var_z));
+                
+                // Publish MarkerPosition message with updated stats
+                MarkerPosition pos_msg;
+                pos_msg.id = ids[i];
+                pos_msg.global_position.x = stats.mean_x;
+                pos_msg.global_position.y = stats.mean_y;
+                pos_msg.global_position.z = stats.mean_z;
+                pos_msg.confidence = stats.mean_confidence;
+                pos_msg.covariance_radius = covariance_radius;
+                pos_msg.observation_count = stats.count;
+                
+                // Only include image if this is a closer observation (saves bandwidth)
+                if (is_closer) {
+                    auto img_it = closest_images_.find(ids[i]);
+                    if (img_it != closest_images_.end() && !img_it->second.empty()) {
+                        try {
+                            std_msgs::msg::Header img_header;
+                            img_header.stamp = this->now();
+                            img_header.frame_id = "camera_frame";
+                            auto img_bridge = cv_bridge::CvImage(img_header, sensor_msgs::image_encodings::BGR8, img_it->second);
+                            pos_msg.closest_image = *img_bridge.toImageMsg();
+                            RCLCPP_INFO(this->get_logger(), "Updated closest image for ID %d (distance: %.3fm)", 
+                                        ids[i], distance);
+                        } catch (const cv_bridge::Exception& e) {
+                            RCLCPP_WARN(this->get_logger(), "Failed to convert closest image for ID %d: %s", ids[i], e.what());
+                        }
+                    }
+                }
+                // Otherwise, leave closest_image empty (default constructed sensor_msgs::Image)
+                
+                marker_pub_->publish(pos_msg);
+            }
             
             // Draw coordinate axes
             cv::drawFrameAxes(frame, camera_matrix, dist_coeffs, rvecs[i], tvecs[i], tag_size * 0.5);
@@ -241,11 +288,8 @@ void ArucoCamera::process_marker_detection(int32_t id, double x, double y, doubl
         double global_y = robot_y + local_x * sin_yaw + local_y * cos_yaw;
         double global_z = robot_z + local_z;  // Height just adds directly
         
-        // Add observation to storage
+        // Update running stats (per ID); publishing happens once per frame
         add_observation(id, global_x, global_y, global_z, confidence);
-        
-        // Publish updated positions (event-driven)
-        publish_averaged_positions();
     } catch (const tf2::TransformException & ex) {
         RCLCPP_WARN_THROTTLE(
             this->get_logger(), *this->get_clock(), 1000,
@@ -256,70 +300,35 @@ void ArucoCamera::process_marker_detection(int32_t id, double x, double y, doubl
 
 void ArucoCamera::add_observation(int32_t id, double x, double y, double z, double confidence)
 {
-    auto now = this->now();
+    auto & stats = marker_stats_[id];
     
-    // Add new observation
-    marker_storage_[id].push_back(MarkerObservation(x, y, z, confidence, now));
+    // Incremental mean and variance (Welford's algorithm), unweighted
+    stats.count += 1;
     
-    // Evict old observations if limit exceeded
-    evict_old_observations(id);
+    // X
+    double delta_x = x - stats.mean_x;
+    stats.mean_x += delta_x / static_cast<double>(stats.count);
+    double delta2_x = x - stats.mean_x;
+    stats.m2_x += delta_x * delta2_x;
+    
+    // Y
+    double delta_y = y - stats.mean_y;
+    stats.mean_y += delta_y / static_cast<double>(stats.count);
+    double delta2_y = y - stats.mean_y;
+    stats.m2_y += delta_y * delta2_y;
+    
+    // Z
+    double delta_z = z - stats.mean_z;
+    stats.mean_z += delta_z / static_cast<double>(stats.count);
+    double delta2_z = z - stats.mean_z;
+    stats.m2_z += delta_z * delta2_z;
+    
+    // Confidence running average
+    double delta_c = confidence - stats.mean_confidence;
+    stats.mean_confidence += delta_c / static_cast<double>(stats.count);
 }
 
-void ArucoCamera::evict_old_observations(int32_t id)
-{
-    auto& observations = marker_storage_[id];
-    
-    // Keep only most recent N observations
-    if (observations.size() > max_observations_per_id_) {
-        observations.erase(observations.begin(), 
-                          observations.begin() + 
-                          (observations.size() - max_observations_per_id_));
-    }
-}
-
-void ArucoCamera::publish_averaged_positions()
-{
-    auto msg = MarkerPositions();
-    msg.header.stamp = this->now();
-    msg.header.frame_id = "odom";
-    
-    for (const auto& pair : marker_storage_) {
-        int32_t id = pair.first;
-        const auto& observations = pair.second;
-        
-        if (observations.empty()) continue;
-        
-        // Calculate weighted average
-        double sum_x = 0.0, sum_y = 0.0, sum_z = 0.0, sum_conf = 0.0;
-        
-        for (const auto& obs : observations) {
-            sum_x += obs.x * obs.confidence;
-            sum_y += obs.y * obs.confidence;
-            sum_z += obs.z * obs.confidence;
-            sum_conf += obs.confidence;
-        }
-        
-        if (sum_conf > 0) {
-            MarkerPosition pos;
-            pos.id = id;
-            pos.global_position.x = sum_x / sum_conf;
-            pos.global_position.y = sum_y / sum_conf;
-            pos.global_position.z = sum_z / sum_conf;
-            pos.confidence = sum_conf / observations.size();
-            pos.observation_count = observations.size();
-            
-            // Single line debug output - just show the updated average
-            RCLCPP_INFO(this->get_logger(), 
-                "ID=%d avg=(%.2f, %.2f, %.2f) n=%d",
-                id, pos.global_position.x, pos.global_position.y, pos.global_position.z, 
-                pos.observation_count);
-            
-            msg.markers.push_back(pos);
-        }
-    }
-    
-    positions_pub_->publish(msg);
-}
+// Removed eviction: we no longer keep full histories
 
 // Spin
 int main(int argc, char ** argv)

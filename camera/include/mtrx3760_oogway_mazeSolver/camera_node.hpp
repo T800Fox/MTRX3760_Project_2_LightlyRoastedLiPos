@@ -16,11 +16,8 @@
 #include <cv_bridge/cv_bridge.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
-#include <marker_tracking/msg/detected_marker.hpp>
-#include <marker_tracking/msg/marker_positions.hpp>
+#include <marker_tracking/msg/marker_position.hpp>
 
-using DetectedMarker = marker_tracking::msg::DetectedMarker;
-using MarkerPositions = marker_tracking::msg::MarkerPositions;
 using MarkerPosition = marker_tracking::msg::MarkerPosition;
 
 struct MarkerObservation {
@@ -32,6 +29,18 @@ struct MarkerObservation {
         : x(x_), y(y_), z(z_), confidence(conf_), timestamp(t) {}
 };
 
+// Running statistics per marker ID (incremental mean and variance)
+struct RunningMarkerStats {
+    int32_t count = 0;
+    double mean_x = 0.0;
+    double mean_y = 0.0;
+    double mean_z = 0.0;
+    double m2_x = 0.0; // sum of squared deltas for variance (Welford)
+    double m2_y = 0.0;
+    double m2_z = 0.0;
+    double mean_confidence = 0.0;
+};
+
 // Base Camera class for general camera operations
 class Camera : public rclcpp::Node
 {
@@ -41,7 +50,7 @@ class Camera : public rclcpp::Node
         
     protected:
         // ROS topic publisher
-        rclcpp::Publisher<DetectedMarker>::SharedPtr marker_pub_;
+        rclcpp::Publisher<MarkerPosition>::SharedPtr marker_pub_;
         
         // Virtual function to be overridden by derived classes
         virtual void processImage(const cv::Mat& frame) = 0;
@@ -69,21 +78,20 @@ class ArucoCamera : public Camera
         std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
         std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
         
-        // Marker positions publisher (for controller functionality)
-        rclcpp::Publisher<MarkerPositions>::SharedPtr positions_pub_;
+        // Storage: map of ID -> running stats (no full history)
+        std::map<int32_t, RunningMarkerStats> marker_stats_;
         
-        // Storage: map of ID -> vector of observations
-        std::map<int32_t, std::vector<MarkerObservation>> marker_storage_;
+        // Storage: map of ID -> closest image and distance
+        std::map<int32_t, cv::Mat> closest_images_;
+        std::map<int32_t, double> closest_distances_;
         
         // Parameters
         double confidence_threshold_;  // Green confidence threshold
-        int max_observations_per_id_;  // Storage limit
+        int max_observations_per_id_;  // Deprecated: no longer used
         
         // Helper functions for controller functionality
         void process_marker_detection(int32_t id, double x, double y, double z, double confidence);
         void add_observation(int32_t id, double x, double y, double z, double confidence);
-        void publish_averaged_positions();
-        void evict_old_observations(int32_t id);
 
         // Declare members
         cv::Ptr<cv::aruco::Dictionary> dictionary;
