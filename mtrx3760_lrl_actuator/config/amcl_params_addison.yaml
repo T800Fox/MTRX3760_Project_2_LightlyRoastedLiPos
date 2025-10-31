@@ -1,0 +1,67 @@
+
+
+# DESCRIPTIONS CREDIT : https://automaticaddison.com/ros-2-navigation-tuning-guide-nav2/#Parameters
+amcl:
+  ros__parameters:
+    alpha1 : 0.2
+    alpha2 : 0.2
+    alpha3 : 0.2
+    alpha4 : 0.2
+    alpha5 : 0.2
+
+    lambda_short : 0.1 # !
+    # Same as default. A good exponential decay parameter for the z_short part of the model.
+    # ...
+    # Increasing this value makes the system more sensitive to unexpected short readings, which can help detect obstacles. 
+    # Decreasing it makes the system more tolerant of short readings, which might help in environments with lots of small objects.
+
+    laser_likelihood_max_dist : 1.0
+    # Matches default. 2.0m is a reasonable maximum distance for obstacle inflation in the likelihood field model.
+    # ...
+    # Increasing this value makes the system consider obstacles further away, which can improve accuracy but increases computation time. 
+    # Decreasing it makes the system focus on closer obstacles, which can be faster but might miss important features.
+
+    save_pose_rate : 0.1 # !
+    # Same as default. 0.5Hz is a good rate for saving the estimated pose to the parameter server.
+    # A value of 0.5 means it saves twice per second. 
+    # ...
+    # Increasing this saves positions more frequently but uses more system resources. 
+    # Decreasing it saves less often but is more efficient.
+
+    max_beams : 60 # !
+    # Matches default. 60 is a good number of evenly-spaced beams to use from each scan.
+    # Increasing this can improve accuracy but slows down processing significantly. 
+    # Decreasing it speeds up processing but might make localization less accurate.
+
+    laser_model_type : “likelihood_field”
+
+    # --- BEAM SKIPPING ---
+    do_beamskip : false 
+    # Same as default. Beam skipping is not necessary in the likelihood field model.
+    # Enables or disables beam skipping entirely.
+    # ...
+    # Beam skipping is usually unnecessary when using the likelihood_field laser model.
+    # Set to true only if you have performance issues due to noisy sensor data and can tolerate some localization error.
+    
+    beam_skip_distance : 0.5
+    # Same as default. 0.5m is a reasonable max distance to consider skipping beams that don’t match the map.
+    # This parameter tells AMCL how different a laser reading can be from the expected map reading before being considered for skipping. 
+    # For example, if a laser beam expects to hit a wall at 3 meters according to the map, 
+    # but actually hits something at 2.3 meters, the difference is 0.7 meters. 
+    # If this difference is larger than beam_skip_distance (i.e. 0.5 meters), this reading becomes a candidate for being skipped.
+
+    beam_skip_error_threshold : 0.9
+    # Matches default. 0.9 is a good percentage of beams to skip before forcing a full update due to bad convergence.
+    # This parameter sets the maximum percentage of beams that can be skipped 
+    # before AMCL forces a full sensor update due to poor convergence. 
+    # ...
+    # Increase it to allow more beams to be skipped, which can help performance in noisy environments but may reduce accuracy.
+    # Decrease it to make the system more cautious, improving accuracy but increasing computational cost.
+
+    beam_skip_threshold : 0.3
+    # Aligns with default. 0.3 works well as the percentage of beams required to skip.
+    # Defines the percentage of beams that must be considered for skipping before beam skipping is even attempted.
+    # ...
+    # Increase it to allow beam skipping to occur more often.
+    # Decrease it to make beam skipping happen less frequently, resulting in more conservative behavior.
+
