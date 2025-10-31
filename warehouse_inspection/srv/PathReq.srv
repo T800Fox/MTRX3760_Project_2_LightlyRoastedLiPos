@@ -1,9 +1,0 @@
-# PathReq.srv
-
-# Request definition
-float64[] angles
-float64[] distances
-
----
-# Response definition
-bool success

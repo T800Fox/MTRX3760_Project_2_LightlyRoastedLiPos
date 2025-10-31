@@ -1,0 +1,12 @@
+uint8 MODE_ABS_LINEAR = 0
+uint8 MODE_ABS_ANGULAR = 1
+uint8 MODE_VEL_LINEAR = 2
+uint8 MODE_VEL_ANGULAR = 3
+
+uint8 mode
+float64 magnitude
+---
+bool success
+---
+float64 err_n
+float64 err_t
