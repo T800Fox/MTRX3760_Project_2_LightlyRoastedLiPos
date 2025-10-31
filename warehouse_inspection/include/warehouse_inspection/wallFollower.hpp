@@ -1,0 +1,65 @@
+//Include actuator goal type
+#include <array>
+#include <deque>
+#include <fstream>
+#include <cmath>
+#include <fstream>
+
+#include "utils.hpp"
+
+
+const double POSE_EQUAL_THRESH = 0.15;
+
+
+enum DIRECTION {
+    FORWARD,
+    LEFT,
+    BACKWARD,
+    RIGHT,
+};
+
+enum STATE {
+    CONTACT_WALL,
+    AWAIT_LOGIC,
+    ROT_RIGHT_CORNER,
+};
+
+const double LIDAR_DT = 1.0/5; // LIDAR update-rate is 5HZ (from .sdf file)
+const double CORNER_OFFSET = 0.15; //Just below threshold distance to ensure wall is registered
+const double STABLE_VEL = 1.0; //Linear velocity at which odom is stable (no slip)
+
+
+
+using lrl_action_interface::action::Action::Goal = actuatorGoal; 
+
+
+class wallFollower {
+    public:
+        wallFollower();
+        ~wallFollower();
+
+        actuatorGoal determine_cmd(std::array<bool,4> wall_pres, std::array<double,4> distance);
+        actuatorGoal calc_refinement(std::array<double,4> distance);
+
+    private:
+        // Member variables
+        bool prev_at_init_pose;
+        bool awaiting_loop_jump;
+        double curr_angle;
+        std::array<bool, 4> prev_wall_pres; //Presence of wall in each 90deg direction (at previous reading)
+
+        Point prev_seg_end_point;
+        std::vector<LineSeg> traversed_segs; //Array of line-segments that have been travesered already (for identifying foreign loops)
+        double prev_right_dist; //Distance to right at previous update (for determining wall_postiion)
+        
+        uint64_t moving_avr_window;
+        std::deque<double> moving_avr_buf; //Buffer of distances for angular refinement (deqeue allows efficient itteration and push/pop)
+        double old_avr; //Moving average at previous update for calculating roc
+
+        STATE state; //High-level navigation state
+        int move_index;
+
+        Pose2D curr_pose;
+        Pose2D loop_init_pose;
+
+};
