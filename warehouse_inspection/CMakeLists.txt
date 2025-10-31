@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 cmake_policy(SET CMP0009 NEW)
-project(mtrx3760_lrl_warehousebot)
+project(mtrx3760_lrl_warehouse_inspection)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -54,7 +54,6 @@ set(srv_files
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
   ${srv_files}
-  "action/Rotate.action"
 )
 
 message(STATUS "Finished generating interfaces for ${PROJECT_NAME}...")
@@ -75,7 +74,9 @@ ament_export_dependencies(
 
 #---Individual Nodes--- 
 add_executable(mazeNavigator src/mazeNavigator_node.cpp src/utils.cpp)
-ament_target_dependencies(mazeNavigator rclcpp rclcpp_action std_msgs geometry_msgs)
+ament_target_dependencies(mazeNavigator 
+                            rclcpp rclcpp_action 
+                            std_msgs geometry_msgs)
 target_link_libraries(mazeNavigator "${cpp_typesupport_target}")
 rosidl_target_interfaces(mazeNavigator ${PROJECT_NAME} "rosidl_typesupport_cpp")
 

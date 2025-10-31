@@ -16,6 +16,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(OpenCV REQUIRED core highgui aruco)
 find_package(cv_bridge REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(mtrx3760_lrl_interfaces REQUIRED)
 
 #---Message Generation---
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -43,15 +45,18 @@ ament_export_dependencies(
   rclcpp 
   tf2
   std_msgs sensor_msgs geometry_msgs
+  mtrx3760_lrl_interfaces
   rosidl_default_runtime)
 
 
 #---Individual Nodes--- 
-add_executable(sensing src/sensing_node.cpp )
-ament_target_dependencies(sensing rclcpp std_msgs sensor_msgs tf2)
-
 add_executable(camera src/camera_node.cpp)
-ament_target_dependencies(camera rclcpp std_msgs sensor_msgs tf2 OpenCV cv_bridge)
+ament_target_dependencies(camera 
+                            rclcpp 
+                            std_msgs sensor_msgs 
+                            tf2 
+                            OpenCV cv_bridge
+                            mtrx3760_lrl_interfaces)
 target_include_directories(camera PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
@@ -65,7 +70,6 @@ target_link_libraries(camera "${cpp_typesupport_target}")
 
 #---Install Targets---
 install(TARGETS
-  sensing
   camera
   DESTINATION lib/${PROJECT_NAME}
 )

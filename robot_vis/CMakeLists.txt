@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(mtrx3760_lrl_warehousebot)
+project(mtrx3760_lrl_robot_vis)
 set(CMAKE_CXX_STANDARD 17)
 
 
