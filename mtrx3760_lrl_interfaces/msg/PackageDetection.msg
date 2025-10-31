@@ -1,5 +1,0 @@
-int32 id
-geometry_msgs/Point global_pos
-float64 confidence
-int32 observation_count
-sensor_msgs/Image image

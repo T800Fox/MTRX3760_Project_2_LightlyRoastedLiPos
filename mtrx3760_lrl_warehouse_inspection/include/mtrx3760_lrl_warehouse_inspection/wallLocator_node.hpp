@@ -5,7 +5,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 
-#include "mtrx3760_oogway_mazesolver/msg/wall_dist.hpp"
+#include "mtrx3760_lrl_warehouse_inspection/msg/wall_dist.hpp"
 
 #define DEG2RAD (M_PI / 180.0)
 #define RAD2DEG (180.0 / M_PI)

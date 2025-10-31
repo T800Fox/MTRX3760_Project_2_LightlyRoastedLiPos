@@ -21,7 +21,7 @@ find_package(cv_bridge REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(mtrx3760_lrl_interfaces REQUIRED)
 
-#---Message Generation---
+# #---Message Generation---
 # rosidl_generate_interfaces(${PROJECT_NAME}
 #   "msg/DetectedMarker.msg"
 #   DEPENDENCIES geometry_msgs sensor_msgs std_msgs

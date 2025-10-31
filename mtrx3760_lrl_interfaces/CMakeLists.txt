@@ -12,9 +12,10 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/PackageDetection.msg"
   "msg/LineSeg.msg"
+  "msg/MarkerDetection.msg"
   "action/Test.action"
+  "srv/PathReq.srv"
   DEPENDENCIES geometry_msgs sensor_msgs
 )
 

@@ -41,15 +41,9 @@ install(DIRECTORY worlds
 #---Custom Message Setup---
 set(msg_files
   "msg/WallDist.msg"
-  "msg/LinearCmd.msg"
-  "msg/AngularCmd.msg"
   "msg/Pose.msg"
 )
 
-#---Define services
-set(srv_files
-  "srv/PathReq.srv"
-)
 
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -79,7 +73,7 @@ add_executable(mazeNavigator src/inspectWarehouseController_node.cpp src/utils.c
 ament_target_dependencies(mazeNavigator 
                             rclcpp rclcpp_action 
                             std_msgs geometry_msgs nav_msgs
-                            lrl_action_interface)
+                            mtrx3760_lrl_interfaces)
 target_link_libraries(mazeNavigator "${cpp_typesupport_target}")
 rosidl_target_interfaces(mazeNavigator ${PROJECT_NAME} "rosidl_typesupport_cpp")
 

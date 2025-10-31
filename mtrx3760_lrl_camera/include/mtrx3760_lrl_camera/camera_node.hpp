@@ -16,9 +16,10 @@
 #include <cv_bridge/cv_bridge.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
-#include <marker_tracking/msg/marker_position.hpp>
 
-using MarkerPosition = marker_tracking::msg::MarkerPosition;
+#include "mtrx3760_lrl_interfaces/msg/marker_detection.hpp"
+
+using MarkerPosition = mtrx3760_lrl_camera::msg::MarkerPosition;
 
 struct MarkerObservation {
     double x, y, z;

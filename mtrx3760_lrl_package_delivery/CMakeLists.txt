@@ -38,32 +38,31 @@ install(DIRECTORY worlds
 
 
 
-#---Custom Message Setup---
-set(msg_files
-  "msg/WallDist.msg"
-  "msg/LinearCmd.msg"
-  "msg/AngularCmd.msg"
-  "msg/Pose.msg"
-)
+# #---Custom Message Setup---
+# set(msg_files
+#   "msg/WallDist.msg"
+#   "msg/LinearCmd.msg"
+#   "msg/AngularCmd.msg"
+#   "msg/Pose.msg"
+# )
 
-#---Define services
-set(srv_files
-  "srv/PathReq.srv"
-)
+# #---Define services
+# set(srv_files
+#   "srv/PathReq.srv"
+# )
 
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-  ${msg_files}
-  ${srv_files}
-  "action/Rotate.action"
-)
+# rosidl_generate_interfaces(${PROJECT_NAME}
+#   ${msg_files}
+#   ${srv_files}
+# )
 
 message(STATUS "Finished generating interfaces for ${PROJECT_NAME}...")
 
-#---Link Messages Against Interface - MOVED HERE BEFORE EXECUTABLES---
-rosidl_get_typesupport_target(cpp_typesupport_target
-  ${PROJECT_NAME} rosidl_typesupport_cpp
-)
+# #---Link Messages Against Interface - MOVED HERE BEFORE EXECUTABLES---
+# rosidl_get_typesupport_target(cpp_typesupport_target
+#   ${PROJECT_NAME} rosidl_typesupport_cpp
+# )
 
 
 #---Export Dependancies---
@@ -81,8 +80,10 @@ ament_target_dependencies(pathFollower
                             rclcpp 
                             nav_msgs std_msgs
                             mtrx3760_lrl_interfaces)
-target_link_libraries(pathFollower "${cpp_typesupport_target}")
-rosidl_target_interfaces(pathFollower ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
+
+# target_link_libraries(pathFollower "${cpp_typesupport_target}")
+# rosidl_target_interfaces(pathFollower ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 #---Build Testing?---
 if(BUILD_TESTING)
