@@ -5,8 +5,9 @@
 #include <cmath>
 #include <fstream>
 
-#include "mtrx3760_lrl_warehouse_inspection/utils.hpp"
+#include "utils.hpp"
 
+#include "mtrx3760_lrl_interfaces/action/inspect_warehouse.hpp"
 
 const double POSE_EQUAL_THRESH = 0.15;
 
@@ -30,7 +31,7 @@ const double STABLE_VEL = 1.0; //Linear velocity at which odom is stable (no sli
 
 
 
-using lrl_action_interface::action::Action::Goal = actuatorGoal; 
+using actuatorGoal = mtrx3760_lrl_interfaces::action::Test::Goal(); 
 
 
 class wallFollower {

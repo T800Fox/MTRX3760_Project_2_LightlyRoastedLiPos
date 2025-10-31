@@ -8,7 +8,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include "wallFollower.hpp"
 
-// #include "mtrx3760_interface/action/inspect_warehouse.hpp"
+#include "mtrx3760_lrl_interfaces/action/inspect_warehouse.hpp"
 
 
 class inspectWarehouseController : public rclcpp::Node

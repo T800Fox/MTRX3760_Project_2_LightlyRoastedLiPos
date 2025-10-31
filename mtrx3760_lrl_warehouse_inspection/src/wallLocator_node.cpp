@@ -1,4 +1,4 @@
-#include "mtrx3760_lrl_warehouse_inspection/wallLocator_node.hpp"
+#include "mtrx3760_warehouse_inspection/wallLocator_node.hpp"
 
 using namespace std::chrono_literals;
 
@@ -11,7 +11,7 @@ wallLocator::wallLocator()
   auto qos = rclcpp::QoS(rclcpp::KeepLast(10));
 
   // Initialise publishers
-  wall_dist_pub_ = this->create_publisher<warehouse_inspection::msg::WallDist>("wall_dist", qos);
+  wall_dist_pub_ = this->create_publisher<mtrx3760_lrl_warehouse_inspection::msg::WallDist>("wall_dist", qos);
 
   // Initialise subscribers
   scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
@@ -40,7 +40,7 @@ void wallLocator::wall_dist_publisher(const sensor_msgs::msg::LaserScan::SharedP
 {
 
   // publish
-  warehouse_inspection::msg::WallDist wall_dist;
+  mtrx3760_lrl_warehouse_inspection::msg::WallDist wall_dist;
 
   for (int i=0; i<4; i++){
     //For burger, LiDar readings are at almost exactly 1 degree increments

@@ -22,7 +22,7 @@ class wallLocator : public rclcpp::Node
         ~wallLocator();
     private:
         // ROS topic publishers
-        rclcpp::Publisher<mtrx3760_oogway_mazesolver::msg::WallDist>::SharedPtr wall_dist_pub_;
+        rclcpp::Publisher<mtrx3760_lrl_warehouse_inspection::msg::WallDist>::SharedPtr wall_dist_pub_;
 
         // ROS topic subscribers
         rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;

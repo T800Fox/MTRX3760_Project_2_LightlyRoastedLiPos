@@ -15,6 +15,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/LineSeg.msg"
   "msg/MarkerDetection.msg"
   "action/Test.action"
+  "action/InspectWarehouse.action"
   "srv/PathReq.srv"
   DEPENDENCIES geometry_msgs sensor_msgs
 )

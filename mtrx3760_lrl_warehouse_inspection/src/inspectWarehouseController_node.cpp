@@ -1,10 +1,10 @@
-#include "mtrx3760_lrl_warehouse_inspection/inspectWarehouseController_node.hpp"
+#include "mtrx3760_warehouse_inspection/inspectWarehouseController_node.hpp"
 
 
 inspectWarehouseController::inspectWarehouseController()
 : Node("inspect_warehouse_controller_node"){
 
-    using namespace std::placeholders;
+  using namespace std::placeholders;
 
   //---Warenouse Inspection Server Setup---
   auto handle_goal = [this] (const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const InspectWarehouse::Goal> goal)
@@ -16,14 +16,14 @@ inspectWarehouseController::inspectWarehouseController()
     return rclcpp_action::GoalResponse::ACCEPT;
   }
 
-  auto handle_cancel = [this] (const std::shared_ptr<InspectWarehouseActuator> goal_handle)
+  auto handle_cancel = [this] (const std::shared_ptr<GoalHandleInspectWarehouse> goal_handle)
   {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
     (void)goal_handle;
     return rclcpp_action::CancelResponse::ACCEPT;
   };
 
-  auto handle_accepted = [this] (const std::shared_ptr<InspectWarehouseActuator> goal_handle)
+  auto handle_accepted = [this] (const std::shared_ptr<GoalHandleInspectWarehouse> goal_handle)
   {
     //Perform warehouse inspection. Start up cv node and call wall-follower routine
   };
@@ -37,9 +37,8 @@ inspectWarehouseController::inspectWarehouseController()
     );
 
 
-
     //This will be the update caller - will pass data into mazesolver cpp class 
-    wall_dist_sub_ = this->create_subscription<warehouse_inspection::msg::WallDist>(
+    wall_dist_sub_ = this->create_subscription<mtrx3760_lrl_warehouse_inspection::msg::WallDist>(
     "wall_dist", 
     qos, 
     std::bind(
@@ -49,10 +48,10 @@ inspectWarehouseController::inspectWarehouseController()
 
 
 
-  curr_pose_sub_ = this->create_subscription<warehouse_inspection::msg::Pose>(
+  curr_pose_sub_ = this->create_subscription<mtrx3760_lrl_warehouse_inspection::msg::Pose>(
     "curr_pose", 
     qos, 
-    [this](const warehouse_inspection::msg::Pose::SharedPtr msg) {
+    [this](const mtrx3760_lrl_warehouse_inspection::msg::Pose::SharedPtr msg) {
         curr_pose.pos.x = msg->x;
         curr_pose.pos.y = msg->y;
         curr_pose.theta = msg->theta;
@@ -71,7 +70,7 @@ inspectWarehouseController::inspectWarehouseController()
   }
 
 
-void inspectWarehouseController::wall_dist_callback(const warehouse_inspection::msg::WallDist::SharedPtr msg){
+void inspectWarehouseController::wall_dist_callback(const mtrx3760_lrl_warehouse_inspection::msg::WallDist::SharedPtr msg){
 
   auto send_goal_options = rclcpp_action::Client<Actuator>::SendGoalOptions();
     
@@ -112,7 +111,7 @@ void inspectWarehouseController::wall_dist_callback(const warehouse_inspection::
     auto act_cmd = wall_follower_logic.determine_cmd(lidar);
     this->client_ptr_->async_send_goal(act_cmd, send_goal_options);
 
-    
+
     //Calculate refinement from wall - only if driving forwards
     if (act_cmd.mode = act_cmd.MODE_VEL_LINEAR){
       auto act_cmd = wall_follower_logic.calc_refinement(lidar);

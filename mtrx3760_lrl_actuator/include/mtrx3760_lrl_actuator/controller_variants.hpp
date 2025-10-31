@@ -48,7 +48,7 @@ struct coord
 
 //---Constants---
 const double pi = 3.14159265359;
-const double MAX_ANG_VEL = 2.2;
+const double MAX_ANG_VEL = 1.1;
 const double MAX_LIN_VEL = 0.2;
 
 //---Classes---
@@ -123,10 +123,15 @@ namespace mtrx3760_lrl_warehousebot
 
 
             //--Variables--
-            coord targetCoord;
+
+            // coord targetCoord;
+            coord startCoord;
+
+            double goalDistance;
+
             double p = 0.5;
             double d = 0.2;
-            double completionTol = 0.08;
+            double completionTol = 0.01;
             double lastErr;
     };
 };
