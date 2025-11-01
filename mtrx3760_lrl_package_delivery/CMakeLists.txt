@@ -17,6 +17,7 @@ find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(mtrx3760_lrl_interfaces REQUIRED)
+find_package(mtrx3760_lrl_actuator REQUIRED)
 
 
 #CAMERA
@@ -68,6 +69,7 @@ ament_export_dependencies(
   rclcpp 
   std_msgs sensor_msgs geometry_msgs nav_msgs
   mtrx3760_lrl_interfaces
+  mtrx3760_lrl_actuator
   rosidl_default_runtime)
 
 
@@ -77,6 +79,7 @@ add_executable(pathFollower src/pathFollower_node.cpp)
 ament_target_dependencies(pathFollower 
                             rclcpp 
                             nav_msgs std_msgs
+                            mtrx3760_lrl_actuator
                             mtrx3760_lrl_interfaces)
 
 

@@ -4,11 +4,7 @@
 inspectWarehouseController::inspectWarehouseController()
 : Node("inspect_warehouse_controller_node"), actuator_client_wrapper_() 
 {
-  using namespace std::placeholders;
-
-  test_client_ptr_ = rclcpp_action::create_client<Actuator>(this, "actuator");
-
-  
+  using namespace std::placeholders;  
 
 /*
   //---Warenouse Inspection Server Setup---
@@ -71,21 +67,18 @@ inspectWarehouseController::inspectWarehouseController()
 
       wall_follower_logic = wallFollower();
       
-      init_wrapper(); 
+      //Init actuator wrapper
+      auto node_shared_ptr = std::static_pointer_cast<rclcpp::Node>(this->shared_from_this());
+      actuator_client_wrapper_ = ActuatorClientWrapper(node_shared_ptr, "actuator");
 
       RCLCPP_INFO(this->get_logger(), "Completed Constructor");
+      this->delayed_wrapper_init_timer_->cancel();
+
     }
   );
 }
 
 
-void inspectWarehouseController::init_wrapper()
-{
-  this->delayed_wrapper_init_timer_->cancel();
-
-  auto node_shared_ptr = std::static_pointer_cast<rclcpp::Node>(this->shared_from_this());
-  actuator_client_wrapper_ = ActuatorClientWrapper(node_shared_ptr, "actuator");
-}
 
 inspectWarehouseController::~inspectWarehouseController(){}
 

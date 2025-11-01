@@ -48,7 +48,7 @@ struct coord
 
 //---Constants---
 const double pi = 3.14159265359;
-const double MAX_ANG_VEL = 1.1;
+const double MAX_ANG_VEL = 0.8;
 const double MAX_LIN_VEL = 0.2;
 
 //---Classes---

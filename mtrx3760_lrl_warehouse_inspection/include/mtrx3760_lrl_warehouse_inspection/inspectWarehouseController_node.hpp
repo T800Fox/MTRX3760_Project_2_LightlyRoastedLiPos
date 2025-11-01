@@ -32,8 +32,6 @@ class inspectWarehouseController : public rclcpp::Node
         inspectWarehouseController();
         ~inspectWarehouseController();
 
-        void init_wrapper();
-
     private:
         //Ros subs
         rclcpp::Subscription<mtrx3760_lrl_warehouse_inspection::msg::WallDist>::SharedPtr wall_dist_sub_;
