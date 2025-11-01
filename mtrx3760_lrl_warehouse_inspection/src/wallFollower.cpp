@@ -15,7 +15,7 @@ wallFollower::wallFollower(){
     prev_wall_pres.fill(false);
 
     //Moving average of wall-dist to refine angle (odom innaccuracy)
-    moving_avr_window = 3;
+    moving_avr_window = 4;
     old_avr = 0.0;
 
 }
@@ -259,7 +259,7 @@ ActuatorCmd wallFollower::calc_refinement(std::array<float,4> distance){
             double error = avr_roc / STABLE_VEL;
 
             //Publish correctional vel prop to error
-            refinement = -error * 3.0;
+            refinement = -error * 3.5;
         }
 
         old_avr = new_avr;

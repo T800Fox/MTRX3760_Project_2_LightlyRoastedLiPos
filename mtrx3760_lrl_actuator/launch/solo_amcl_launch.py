@@ -7,7 +7,7 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 
 def generate_launch_description():
-    amcl_params_file = os.path.join(get_package_share_directory("mtrx3760_lrl_warehousebot"),
+    amcl_params_file = os.path.join(get_package_share_directory("mtrx3760_lrl_actuator"),
                                     'config', 
                                     'amcl_params.yaml') 
     return LaunchDescription([

@@ -7,7 +7,7 @@
 
 
 //Actuator goal type
-struct l {
+struct ActuatorCmd {
     static constexpr uint8_t MODE_ABS_LINEAR  = 0;
     static constexpr uint8_t MODE_ABS_ANGULAR = 1;
     static constexpr uint8_t MODE_VEL_LINEAR  = 2;
