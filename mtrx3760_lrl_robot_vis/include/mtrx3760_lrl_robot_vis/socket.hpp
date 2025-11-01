@@ -1,13 +1,34 @@
-#ifndef ROBOT_VIS_SOCKET_HPP_
-#define ROBOT_VIS_SOCKET_HPP_
+#pragma once
+#include <TcpServer.h>
+#include <TcpClient.h>
+#include <EventLoop.h>
+#include <nlohmann/json.hpp>
+#include <unordered_map>
+#include <mutex>
+#include <string>
+#include <thread>
+#include <iostream>
 
-#include <thread>      
-#include <mutex>        
-#include <string>       
-#include <iostream>     
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>  
+using json = nlohmann::json;
 
+class TCP_Connection {
+public:
+    TCP_Connection();
+    ~TCP_Connection();
 
-#endif
+    int create_server(int port);
+    int connect_to_server(const std::string& ip, int port);
+    int send_json(const json& j);
+    json query_prev_packet(const std::string& key, bool clear=false);
+
+private:
+    std::shared_ptr<hv::TcpServer> server;
+    std::shared_ptr<hv::TcpClient> client;
+    std::shared_ptr<hv::SocketChannel> channel;  // shared because libhv may also hold references
+    std::shared_ptr<hv::EventLoop> loop;
+
+    std::unordered_map<std::string, json> last_packets;
+    std::mutex map_mutex;
+
+    void start_loop();
+};

@@ -1,9 +1,11 @@
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <cmath>
 #include <string>
+#include "render_objs.hpp"
+#include "socket.hpp"
+#include "visualiser.hpp"
 
-#include "mtrx3760_lrl_robot_vis/render_objs.hpp"
-#include "mtrx3760_lrl_robot_vis/socket.hpp"
 
 
 
@@ -14,10 +16,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    const int WINDOW_WIDTH = 800;
-    const int WINDOW_HEIGHT = 600;
+    TTF_Init(); //Init text renderer
 
-    SDL_Window* window = SDL_CreateWindow("SDL2 2D Camera Example",
+
+    const int WINDOW_WIDTH = 1280;
+    const int WINDOW_HEIGHT = 720;
+
+    SDL_Window* window = SDL_CreateWindow("Warehouse Robot Interface",
                                           SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                           WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
     if (!window) {
@@ -32,14 +37,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Cam2D cam(Point(0, 0), 1.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 0.2f);
 
-    Grid grid(Point(0,0), 50.0f, &cam, renderer);
+    Uint32 lastTime = SDL_GetTicks();
+    int frames = 0;
 
-    // Create objects
-    Line line(Point(-1, -1), Point(2, 2), &cam, renderer, true);
-    Circle circle(Point(1, 1), 30, &cam, renderer, true);
-    Rect rect(Point(0, 0), 10.0f, Point(100, 50), &cam, renderer, true);
+
+    Visualiser visualiser(window, renderer);
+
 
     bool quit = false;
     SDL_Event e;
@@ -50,8 +54,11 @@ int main(int argc, char* argv[]) {
 
     while (!quit) {
         scroll_event = 0;
+        Uint64 start = SDL_GetPerformanceCounter();
 
         while (SDL_PollEvent(&e)) {
+            ImGui_ImplSDL2_ProcessEvent(&e); //pass event to IMGUI to proccess
+
             if (e.type == SDL_QUIT) quit = true;
             else if (e.type == SDL_MOUSEWHEEL) {
                 scroll_event = e.wheel.y;
@@ -70,28 +77,26 @@ int main(int argc, char* argv[]) {
 
         int mx, my;
         SDL_GetMouseState(&mx, &my);
-        mouse_pos = Point((float)mx, (float)my);
+        mouse_pos = Point{(float)mx, (float)my};
 
+        //Update!!
+        visualiser.update(mouse_pos, mouse_pressed, scroll_event);
         
-       /* rect.set_pos(shared_data.robot_pos);
-        rect.set_angle(shared_data.robot_rot);
-        std::cout << shared_data.robot_rot << '\n';*/
-
-
-        cam.update(mouse_pos, mouse_pressed, scroll_event);
-        
+    
 
         //Rendering:
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
 
-        grid.render();
-        line.render();
-        circle.render();
-        rect.render();
-
+        visualiser.render();
 
         SDL_RenderPresent(renderer);
+
+
+        Uint64 end = SDL_GetPerformanceCounter();
+        double delta = (end - start) / (double)SDL_GetPerformanceFrequency();
+        std::cout << "Frame time: " << delta*1000.0 << " ms, FPS: " << 1.0/delta << "\r";
+
     }
 
     SDL_DestroyRenderer(renderer);
