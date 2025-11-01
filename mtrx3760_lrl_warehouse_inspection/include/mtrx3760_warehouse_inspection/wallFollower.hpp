@@ -53,6 +53,7 @@ class wallFollower {
         std::vector<LineSeg> traversed_segs; //Array of line-segments that have been travesered already (for identifying foreign loops)
         double prev_right_dist; //Distance to right at previous update (for determining wall_postiion)
         
+        bool apply_refinement;
         uint64_t moving_avr_window;
         std::deque<double> moving_avr_buf; //Buffer of distances for angular refinement (deqeue allows efficient itteration and push/pop)
         double old_avr; //Moving average at previous update for calculating roc

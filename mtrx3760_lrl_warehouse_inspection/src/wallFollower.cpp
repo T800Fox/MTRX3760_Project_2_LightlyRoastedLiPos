@@ -22,8 +22,9 @@ wallFollower::wallFollower(){
 
 
 actuatorGoal wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::array<double,4> distance){
+    apply_refinement = false;
+
     //Lambda actuator functions
-    
     auto actuator_cmd = actuatorGoal();
 
 
@@ -104,6 +105,9 @@ actuatorGoal wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::arra
                 //Moving forwards:
                 //RCLCPP_INFO(this->get_logger(), "Moving forwards!!");
                 set_vel(0.2); 
+
+                //Flag for later called refinement method
+                apply_refinement = true;
 
                 //Check if loop has been completed
                 bool return_prev_flag = false;
@@ -228,6 +232,8 @@ actuatorGoal wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::arra
 
 
 actuatorGoal WallFollower::calc_refinement(std::array<double,4> distance){
+    if (!apply_refinement){return;}
+    
     moving_avr_buf.push_back(new_dist);
 
     //Refinement in rad/s
