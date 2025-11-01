@@ -208,11 +208,11 @@ geometry_msgs::msg::TwistStamped mtrx3760_lrl_warehousebot::absLinearController:
 
     // check for abort?
 
-    // check for compeletion
-    if (storedControlState == RUNNING && abs(generateErrorTerm(aTransformMsg)) < completionTol)
-    {
-        storedControlState = TARGET_REACHED;
-    }
+    // check for compeletion -> moved to computeResponse()
+    // if (storedControlState == RUNNING && abs(generateErrorTerm(aTransformMsg)) < completionTol)
+    // {
+    //     storedControlState = TARGET_REACHED;
+    // }
 
     // state machine
     switch(storedControlState)
@@ -368,8 +368,10 @@ double mtrx3760_lrl_warehousebot::absLinearController::computeResponse(double aE
 
     if (abs(response) <= 0.01)
     {
-        response = 0;
+        // response = 0;
         std::cout << "  CONTROLLER >>>>> BOT UNABLE TO DRIVE" << std::endl;
+
+        storedControlState = TARGET_REACHED;
     }
 
     std::cout << "          Clamped Response :" << response << std::endl << std::endl;
