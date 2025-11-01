@@ -72,43 +72,31 @@ void pathFollower::follow_path_callback(
 
 void pathFollower::update(){
     //If stationary, pass next command
-    if (!(is_abs_moving || is_abs_rotating)){
+    if (wrapper->is_in_motion()){return;}
 
-        switch ((CMD_TYPE) (cmd_ind % 2)){
-            case ROTATE:{
-                mtrx3760_oogway_mazesolver::msg::AngularCmd cmd;
-                double angle_offset = angles[cmd_ind/2]; //target angle
-
-                cmd.target_angle = std::fmod((curr_angle + angle_offset * (M_PI/180)), M_PI*2) ; //Wrap angle to valid range
-                cmd.mode = cmd.MODE_ABSOLUTE;
-
-                angular_cmd_pub_->publish(cmd); //Publish angle to controller
-
-                curr_angle = cmd.target_angle; // Update current angle
-
-                break;
-            }
-
-            case DRIVE:{
-                mtrx3760_oogway_mazesolver::msg::LinearCmd cmd;
-                cmd.target_distance = std::max(0.0, distances[cmd_ind/2]); //Clamp distance to positive value
-                cmd.mode = cmd.MODE_ABSOLUTE;
-
-                linear_cmd_pub_->publish(cmd); //Publish distance to controller
-                
-                break;
-            }
-
+    switch ((CMD_TYPE) (cmd_ind % 2)){
+        case ROTATE:{
+            ActuatorCmd ang_cmd{ActuatorCmd.MODE_ABS_ANGULAR, 3.1415926/180.0 * angles[cmd_ind/2]};
+            //Publish angle to controller
+            send_goal(ang_cmd);
+            break;
         }
 
-        //Increment command index and check if path has been complete
-        if (cmd_ind ++ == distances.size()*2){
-            RCLCPP_INFO(this->get_logger(), "Path completed");
-            cmd_ind = 0;
-        } 
+        case DRIVE:{
+            ActuatorCmd lin_cmd{ActuatorCmd.MODE_ABS_LINEAR, distances[cmd_ind/2]};
+            //Publish distance to controller
+            send_goal(lin_cmd);
+            break;
+        }
 
-        
     }
+
+    //Increment command index and check if path has been complete
+    if (cmd_ind ++ == distances.size()*2){
+        RCLCPP_INFO(this->get_logger(), "Path completed");
+        cmd_ind = 0;
+    } 
+
 }
 
 
