@@ -1,13 +1,17 @@
+#ifndef MTRX3760_LRL_WALL_FOLLOWER_HPP_
+#define MTRX3760_LRL_WALL_FOLLOWER_HPP_
+
 //Include actuator goal type
 #include <array>
 #include <deque>
 #include <fstream>
 #include <cmath>
 #include <fstream>
+#include <cstdint>
 
+#include "mtrx3760_lrl_actuator/actuator_client.hpp"
 #include "utils.hpp"
 
-#include "mtrx3760_lrl_interfaces/action/inspect_warehouse.hpp"
 
 const double POSE_EQUAL_THRESH = 0.15;
 
@@ -31,16 +35,15 @@ const double STABLE_VEL = 1.0; //Linear velocity at which odom is stable (no sli
 
 
 
-using actuatorGoal = mtrx3760_lrl_interfaces::action::Test::Goal(); 
-
 
 class wallFollower {
+    
     public:
         wallFollower();
         ~wallFollower();
 
-        actuatorGoal determine_cmd(std::array<bool,4> wall_pres, std::array<double,4> distance);
-        actuatorGoal calc_refinement(std::array<double,4> distance);
+        ActuatorCmd determine_cmd(std::array<bool,4> wall_pres, std::array<float,4> distance);
+        ActuatorCmd calc_refinement(std::array<float,4> distance);
 
     private:
         // Member variables
@@ -65,3 +68,6 @@ class wallFollower {
         Pose2D loop_init_pose;
 
 };
+
+
+#endif

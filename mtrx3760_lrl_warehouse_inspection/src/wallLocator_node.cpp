@@ -1,4 +1,4 @@
-#include "mtrx3760_warehouse_inspection/wallLocator_node.hpp"
+#include "mtrx3760_lrl_warehouse_inspection/wallLocator_node.hpp"
 
 using namespace std::chrono_literals;
 

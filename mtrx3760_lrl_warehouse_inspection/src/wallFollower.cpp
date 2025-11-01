@@ -1,4 +1,4 @@
-#include "mtrx3760_warehouse_inspection/wallFollower.hpp"
+#include "mtrx3760_lrl_warehouse_inspection/wallFollower.hpp"
 
 
 
@@ -15,19 +15,20 @@ wallFollower::wallFollower(){
     prev_wall_pres.fill(false);
 
     //Moving average of wall-dist to refine angle (odom innaccuracy)
-    moving_avr_window = 5;
+    moving_avr_window = 3;
     old_avr = 0.0;
 
 }
 
+wallFollower::~wallFollower(){}
 
-actuatorGoal wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::array<double,4> distance){
+
+ActuatorCmd wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::array<float,4> distance){
     apply_refinement = false;
 
+    ActuatorCmd actuator_cmd;
+
     //Lambda actuator functions
-    auto actuator_cmd = actuatorGoal();
-
-
     auto set_vel = [&actuator_cmd] (double vel){
         actuator_cmd.mode = actuator_cmd.MODE_VEL_LINEAR;
         actuator_cmd.magnitude = vel;
@@ -40,7 +41,7 @@ actuatorGoal wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::arra
 
     auto rotate_ang = [&actuator_cmd] (double angle){
         actuator_cmd.mode = actuator_cmd.MODE_ABS_ANGULAR;
-        actuator_cmd.magnitude = angle;
+        actuator_cmd.magnitude = -angle * 3.1415926/180.0;
     };
 
 
@@ -231,10 +232,13 @@ actuatorGoal wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::arra
 
 
 
-actuatorGoal WallFollower::calc_refinement(std::array<double,4> distance){
-    if (!apply_refinement){return;}
+ActuatorCmd wallFollower::calc_refinement(std::array<float,4> distance){
+    ActuatorCmd actuator_cmd{actuator_cmd.MODE_VEL_ANGULAR, 0.0};
+
+    //Only apply refinement if flagged from main actuation cmd
+    if (!apply_refinement){return actuator_cmd;}
     
-    moving_avr_buf.push_back(new_dist);
+    moving_avr_buf.push_back(distance[RIGHT]);
 
     //Refinement in rad/s
     double refinement = 0.0;
@@ -255,17 +259,14 @@ actuatorGoal WallFollower::calc_refinement(std::array<double,4> distance){
             double error = avr_roc / STABLE_VEL;
 
             //Publish correctional vel prop to error
-            refinement = -error * 2.5;
+            refinement = -error * 3.0;
         }
 
         old_avr = new_avr;
     }
 
     //Construct actuator goal
-    auto actuator_cmd = actuatorGoal();
-    actuator_cmd.mode = actuator_cmd.MODE_VEL_ANGULAR;
     actuator_cmd.magnitude = refinement;
-
 
     return actuator_cmd;
 }

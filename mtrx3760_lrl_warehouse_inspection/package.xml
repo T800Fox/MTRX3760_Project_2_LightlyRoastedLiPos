@@ -17,6 +17,7 @@
   <test_depend>ament_lint_common</test_depend>
 
   <depend>mtrx3760_lrl_interfaces</depend>
+  <depend>mtrx3760_lrl_actuator</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

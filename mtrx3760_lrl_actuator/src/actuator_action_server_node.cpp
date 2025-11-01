@@ -81,6 +81,7 @@ void mtrx3760_lrl_warehousebot::ActuatorActionServer::execute(const std::shared_
     RCLCPP_INFO(this->get_logger(), "Controller Command");
 
     manager.fireUpController(goal_handle);
+    listen_tf();
   }
 };
 //---------------------------------------------

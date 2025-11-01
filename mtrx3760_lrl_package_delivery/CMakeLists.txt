@@ -33,8 +33,6 @@ install(DIRECTORY include/${PROJECT_NAME}/
           DESTINATION include/${PROJECT_NAME}
           FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 
-install(DIRECTORY worlds
-        DESTINATION share/${PROJECT_NAME})
 
 
 
@@ -82,7 +80,7 @@ ament_target_dependencies(pathFollower
                             mtrx3760_lrl_interfaces)
 
 
-# target_link_libraries(pathFollower "${cpp_typesupport_target}")
+# target_link_libraries(pathFollower "$cpp_typesupport_target{}")
 # rosidl_target_interfaces(pathFollower ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 #---Build Testing?---

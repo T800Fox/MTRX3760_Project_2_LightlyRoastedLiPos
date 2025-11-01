@@ -1,5 +1,5 @@
-#ifndef MTRX3760_OOGWAY_MAZESOLVER_UTILS_HPP_
-#define MTRX3760_OOGWAY_MAZESOLVER_UTILS_HPP_
+#ifndef MTRX3760_LRL_MAZESOLVER_UTILS_HPP_
+#define MTRX3760_LRL_MAZESOLVER_UTILS_HPP_
 
 #include <math.h>
 #include <string>
@@ -13,6 +13,16 @@
 struct Point {
     double x;
     double y;
+    
+    // Overload + operator
+    Point operator+(const Point& other) const {
+        return {x + other.x, y + other.y};
+    }
+
+    // Overload - operator
+    Point operator-(const Point& other) const {
+        return {x - other.x, y - other.y};
+    }
 };
 
 struct Pose2D {
