@@ -75,7 +75,7 @@ ament_export_dependencies(
 
 
 #---Individual Nodes--- 
-add_executable(pathFollower src/pathFollower_node.cpp)
+add_executable(pathFollower src/pathFollower_node.cpp src/pathFeeder.cpp)
 ament_target_dependencies(pathFollower 
                             rclcpp 
                             nav_msgs std_msgs

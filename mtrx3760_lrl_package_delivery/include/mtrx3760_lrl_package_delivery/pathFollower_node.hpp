@@ -14,6 +14,8 @@
 
 #include "mtrx3760_lrl_interfaces/srv/path_req.hpp"
 
+#include "mtrx3760_lrl_package_delivery/pathFeeder.hpp"
+
 
 
 //Alternate command types enum
@@ -29,13 +31,9 @@ class pathFollower : public rclcpp::Node
         ~pathFollower();
     private:
         // ROS topic publishers
-        rclcpp::Publisher<mtrx3760_oogway_mazesolver::msg::AngularCmd>::SharedPtr angular_cmd_pub_;
-        rclcpp::Publisher<mtrx3760_oogway_mazesolver::msg::LinearCmd>::SharedPtr linear_cmd_pub_;
 
 
         // ROS topic subscribers
-        rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr is_abs_rotating_sub_;
-        rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr is_abs_moving_sub_;
         
 
         // Service servers
@@ -48,6 +46,8 @@ class pathFollower : public rclcpp::Node
 
 
         // Member variables
+        pathFeeder commandListHandler();
+
         bool is_abs_rotating;
         bool is_abs_moving;
 

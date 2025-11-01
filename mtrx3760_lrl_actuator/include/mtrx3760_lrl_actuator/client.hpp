@@ -13,11 +13,9 @@ class ActionClientWrapper {
     public:
         using GoalHandleAction = rclcpp_action::ClientGoalHandle<ActionT>;
 
-
         ActionClientWrapper(rclcpp::Node::SharedPtr node, const std::string &action_name);
 
         bool wait_for_server(std::chrono::seconds timeout = std::chrono::seconds(3));
-
 
         void send_goal(const Goal &goal,
                     std::function<void(const std::shared_ptr<const ActionT::Feedback> feedback)> feedback_cb = nullptr,
