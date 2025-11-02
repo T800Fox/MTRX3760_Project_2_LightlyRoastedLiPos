@@ -4,7 +4,7 @@
 
 #include "mtrx3760_lrl_camera/camera_node.hpp"
 
-using namespace marker_tracking::msg;
+using namespace mtrx3760_lrl_interfaces::msg;
 
 // ============================================================================
 // Base Camera Class Implementation
@@ -13,7 +13,7 @@ using namespace marker_tracking::msg;
 Camera::Camera(const std::string& node_name) : Node(node_name)
 {
     // Initialize publisher
-    marker_pub_ = create_publisher<MarkerPosition>("/detections/raw", 10);
+    marker_pub_ = create_publisher<MarkerDetection>("/detections/raw", 10);
     
     // Initialize subscribers
     // Use compressed images (better for bandwidth)
@@ -202,8 +202,8 @@ void ArucoCamera::processImage(const cv::Mat& frame)
                 double var_z = (stats.count > 1) ? (stats.m2_z / static_cast<double>(stats.count - 1)) : 0.0;
                 double covariance_radius = std::sqrt(std::max(0.0, var_x + var_y + var_z));
                 
-                // Publish MarkerPosition message with updated stats
-                MarkerPosition pos_msg;
+                // Publish MarkerDetection message with updated stats
+                MarkerDetection pos_msg;
                 pos_msg.id = ids[i];
                 pos_msg.global_position.x = stats.mean_x;
                 pos_msg.global_position.y = stats.mean_y;

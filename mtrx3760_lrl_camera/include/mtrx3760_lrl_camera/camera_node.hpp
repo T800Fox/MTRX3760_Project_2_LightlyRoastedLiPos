@@ -19,7 +19,7 @@
 
 #include "mtrx3760_lrl_interfaces/msg/marker_detection.hpp"
 
-using MarkerPosition = mtrx3760_lrl_camera::msg::MarkerPosition;
+using MarkerDetection = mtrx3760_lrl_interfaces::msg::MarkerDetection;
 
 struct MarkerObservation {
     double x, y, z;
@@ -51,7 +51,7 @@ class Camera : public rclcpp::Node
         
     protected:
         // ROS topic publisher
-        rclcpp::Publisher<MarkerPosition>::SharedPtr marker_pub_;
+        rclcpp::Publisher<MarkerDetection>::SharedPtr marker_pub_;
         
         // Virtual function to be overridden by derived classes
         virtual void processImage(const cv::Mat& frame) = 0;

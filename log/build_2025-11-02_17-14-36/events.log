@@ -1,0 +1,10 @@
+[0.000000] (-) TimerEvent: {}
+[0.000340] (-) JobUnselected: {'identifier': 'mtrx3760_lrl_actuator'}
+[0.000398] (-) JobUnselected: {'identifier': 'mtrx3760_lrl_interfaces'}
+[0.000430] (-) JobUnselected: {'identifier': 'mtrx3760_lrl_package_delivery'}
+[0.000456] (-) JobUnselected: {'identifier': 'mtrx3760_lrl_robot_vis'}
+[0.000479] (-) JobUnselected: {'identifier': 'mtrx3760_lrl_warehouse_inspection'}
+[0.000507] (mtrx3760_lrl_camera) JobQueued: {'identifier': 'mtrx3760_lrl_camera', 'dependencies': OrderedDict({'mtrx3760_lrl_interfaces': '/home/jfox/lrl_integration_workspace/src/install/mtrx3760_lrl_interfaces'})}
+[0.000543] (mtrx3760_lrl_camera) JobStarted: {'identifier': 'mtrx3760_lrl_camera'}
+[0.017867] (mtrx3760_lrl_camera) JobEnded: {'identifier': 'mtrx3760_lrl_camera', 'rc': 1}
+[0.028646] (-) EventReactorShutdown: {}

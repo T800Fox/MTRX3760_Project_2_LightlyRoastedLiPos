@@ -33,14 +33,14 @@ include_directories(/usr/include/opencv4)
 install(DIRECTORY include/${PROJECT_NAME}/
           DESTINATION include/${PROJECT_NAME}
           FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
-install(FILES include/camera_node.hpp
-        DESTINATION include)
+# install(FILES include/camera_node.hpp
+#         DESTINATION include)
 
 #---Add Launch and Config Files To Share---
 install(DIRECTORY launch
         DESTINATION share/${PROJECT_NAME})
-install(DIRECTORY config
-        DESTINATION share/${PROJECT_NAME})
+# install(DIRECTORY config
+#         DESTINATION share/${PROJECT_NAME})
 
 #---Export Dependancies---
 ament_export_dependencies(
