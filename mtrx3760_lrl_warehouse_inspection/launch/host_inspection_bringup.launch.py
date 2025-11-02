@@ -12,16 +12,22 @@ def generate_launch_description():
                 PathJoinSubstitution([
                     FindPackageShare('mtrx3760_lrl_camera'),
                     'launch',
-                    'marker_tracking.launch.py '
+                    'marker_tracking.launch.py'
                 ])
             ]),
+        ),
+        Node(
+            package='mtrx3760_lrl_actuator',
+            executable='actuator_action_server',
+            name='actuator_action_server',
+            output='screen'
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([
                 PathJoinSubstitution([
                     FindPackageShare('mtrx3760_lrl_warehouse_inspection'),
                     'launch',
-                    'maze_solver_launch.py '
+                    'maze_solver_launch.py'
                 ])
             ]),
         )
