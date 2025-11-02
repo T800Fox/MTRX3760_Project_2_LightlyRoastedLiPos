@@ -5,7 +5,7 @@ def generate_launch_description():
     return LaunchDescription([
         # Camera Node (now includes controller functionality)
         Node(
-            package='marker_tracking',
+            package='mtrx3760_lrl_camera',
             executable='camera',
             name='camera_node',
             output='screen',

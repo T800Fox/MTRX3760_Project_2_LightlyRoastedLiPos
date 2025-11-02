@@ -52,14 +52,14 @@ ament_export_dependencies(
 
 
 #---Individual Nodes--- 
-add_executable(mtrx3760_lrl_camera src/camera_node.cpp)
-ament_target_dependencies(mtrx3760_lrl_camera 
+add_executable(camera src/camera_node.cpp)
+ament_target_dependencies(camera 
                             rclcpp 
                             std_msgs sensor_msgs 
                             tf2 tf2_ros tf2_geometry_msgs
                             OpenCV cv_bridge
                             mtrx3760_lrl_interfaces)
-target_include_directories(mtrx3760_lrl_camera PUBLIC
+target_include_directories(camera PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
@@ -72,7 +72,7 @@ target_include_directories(mtrx3760_lrl_camera PUBLIC
 
 #---Install Targets---
 install(TARGETS
-  mtrx3760_lrl_camera
+  camera
   DESTINATION lib/${PROJECT_NAME}
 )
 

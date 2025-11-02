@@ -49,7 +49,7 @@ void Camera::camera_callback(const sensor_msgs::msg::CompressedImage::SharedPtr 
 // ArucoCamera Class Implementation
 // ============================================================================
 
-ArucoCamera::ArucoCamera() : Camera("oogway_camera_node")
+ArucoCamera::ArucoCamera() : Camera("lrl_camera_node")
 {
     // Declare parameters (for controller functionality)
     this->declare_parameter("confidence_threshold", 0.7);
@@ -257,7 +257,8 @@ void ArucoCamera::process_marker_detection(int32_t id, double x, double y, doubl
     try {
         // Get base_link position and rotation in odom frame from TF2
         auto transform = tf_buffer_->lookupTransform(
-            "odom", "base_link", this->now(), rclcpp::Duration::from_seconds(0.1));
+            // "odom", "base_link", this->now(), rclcpp::Duration::from_seconds(0.1));
+            "odom", "base_link", tf2::TimePointZero);
         
         // Extract robot position in odom frame (x, y, z)
         double robot_x = transform.transform.translation.x;
