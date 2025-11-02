@@ -1,0 +1,45 @@
+[0.012s] Invoking command in '/home/noah-l/MTRX3760_Project_2_LightlyRoastedLiPos/robot_vis/build/robot_vis': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/noah-l/turtlebot3_ws/install/turtlebot3_teleop:/home/noah-l/turtlebot3_ws/install/turtlebot3_example:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/noah-l/MTRX3760_Project_2_LightlyRoastedLiPos/robot_vis -DCMAKE_INSTALL_PREFIX=/home/noah-l/MTRX3760_Project_2_LightlyRoastedLiPos/robot_vis/install/robot_vis
+[0.171s] -- The C compiler identification is GNU 13.3.0
+[0.302s] -- The CXX compiler identification is GNU 13.3.0
+[0.326s] -- Detecting C compiler ABI info
+[0.417s] -- Detecting C compiler ABI info - done
+[0.424s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.424s] -- Detecting C compile features
+[0.425s] -- Detecting C compile features - done
+[0.434s] -- Detecting CXX compiler ABI info
+[0.526s] -- Detecting CXX compiler ABI info - done
+[0.535s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.535s] -- Detecting CXX compile features
+[0.535s] -- Detecting CXX compile features - done
+[0.548s] -- Found rclcpp: 28.1.12 (/opt/ros/jazzy/share/rclcpp/cmake)
+[0.688s] -- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+[0.926s] -- Found rosidl_generator_c: 4.6.6 (/opt/ros/jazzy/share/rosidl_generator_c/cmake)
+[0.950s] -- Found rosidl_generator_cpp: 4.6.6 (/opt/ros/jazzy/share/rosidl_generator_cpp/cmake)
+[0.981s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.011s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.129s] -- Found rmw_implementation_cmake: 7.3.2 (/opt/ros/jazzy/share/rmw_implementation_cmake/cmake)
+[1.136s] -- Found rmw_cyclonedds_cpp: 2.2.3 (/opt/ros/jazzy/share/rmw_cyclonedds_cpp/cmake)
+[1.189s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[1.283s] -- Found sensor_msgs: 5.3.6 (/opt/ros/jazzy/share/sensor_msgs/cmake)
+[1.360s] -- Found nav_msgs: 5.3.6 (/opt/ros/jazzy/share/nav_msgs/cmake)
+[1.391s] -- Found rosidl_default_generators: 1.6.0 (/opt/ros/jazzy/share/rosidl_default_generators/cmake)
+[1.421s] -- Found rosidl_adapter: 4.6.6 (/opt/ros/jazzy/share/rosidl_adapter/cmake)
+[1.442s] [31mCMake Error at CMakeLists.txt:13 (find_package):
+[1.442s]   By not providing "Findcustom_interfaces.cmake" in CMAKE_MODULE_PATH this
+[1.442s]   project has asked CMake to find a package configuration file provided by
+[1.442s]   "custom_interfaces", but CMake did not find one.
+[1.442s] 
+[1.442s]   Could not find a package configuration file provided by "custom_interfaces"
+[1.442s]   with any of the following names:
+[1.442s] 
+[1.443s]     custom_interfacesConfig.cmake
+[1.443s]     custom_interfaces-config.cmake
+[1.443s] 
+[1.443s]   Add the installation prefix of "custom_interfaces" to CMAKE_PREFIX_PATH or
+[1.443s]   set "custom_interfaces_DIR" to a directory containing one of the above
+[1.443s]   files.  If "custom_interfaces" provides a separate development package or
+[1.443s]   SDK, be sure it has been installed.
+[1.443s] 
+[1.443s] [0m
+[1.443s] -- Configuring incomplete, errors occurred!
+[1.449s] Invoked command in '/home/noah-l/MTRX3760_Project_2_LightlyRoastedLiPos/robot_vis/build/robot_vis' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/noah-l/turtlebot3_ws/install/turtlebot3_teleop:/home/noah-l/turtlebot3_ws/install/turtlebot3_example:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/noah-l/MTRX3760_Project_2_LightlyRoastedLiPos/robot_vis -DCMAKE_INSTALL_PREFIX=/home/noah-l/MTRX3760_Project_2_LightlyRoastedLiPos/robot_vis/install/robot_vis
