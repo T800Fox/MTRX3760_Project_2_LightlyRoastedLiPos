@@ -120,12 +120,11 @@ void DeliveryController::delivery_action_execute(const std::shared_ptr<GoalHandl
     //planer.setDeliveryCell(del_cell.x, del_cell.y) -----------------
 
 
-    //THE PATH FINDER SHOULDN'T NEED TO KNOW LABEL AND NAME - JUST POS AND PRIORITY
     //Extract from goal
     std::vector<PlanningCore::ItemTarget> items = {
-        {"ItemA", 300, 1800, 'A', 2},
-        {"ItemB", 400,  900, 'B', 2},
-        {"ItemC", 300,  100, 'C', 1}
+        {300, 1800, 2},
+        {400,  900, 2},
+        {300,  100, 1}
     };
     planner.setItems(items);
 

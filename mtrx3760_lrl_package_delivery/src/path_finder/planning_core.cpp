@@ -31,12 +31,16 @@ void PlanningCore::setStartCell(int row, int col)
     start_ = {row, col};
 }
 
+
 void PlanningCore::setItems(const std::vector<ItemTarget>& items_mm)
 {
     items_.clear();
     items_.reserve(items_mm.size());
     for (const auto& it : items_mm) {
-        Item i; i.name = it.name; i.x_mm = it.x_mm; i.y_mm = it.y_mm; i.label = it.label; i.priority = it.priority;
+        Item i;
+        i.x_mm = it.x_mm;
+        i.y_mm = it.y_mm;
+        i.priority = it.priority;
         items_.push_back(i);
     }
 }
