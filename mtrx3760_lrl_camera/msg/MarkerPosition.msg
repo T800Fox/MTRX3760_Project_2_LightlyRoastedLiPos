@@ -1,0 +1,5 @@
+int32 id
+geometry_msgs/Point global_position
+float64 confidence
+int32 observation_count
+
