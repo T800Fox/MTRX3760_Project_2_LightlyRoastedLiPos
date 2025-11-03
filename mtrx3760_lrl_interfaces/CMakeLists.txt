@@ -33,10 +33,13 @@ ament_export_dependencies(
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/LineSeg.msg"
   "msg/MarkerDetection.msg"
+  "msg/PackRequest.msg"
+  "msg/Pose.msg"
   "action/Test.action"
   "action/InspectWarehouse.action"
+  "action/PerformDelivery.action"
   "srv/PathReq.srv"
-  DEPENDENCIES geometry_msgs sensor_msgs
+  DEPENDENCIES std_msgs geometry_msgs sensor_msgs builtin_interfaces
 )
 
 

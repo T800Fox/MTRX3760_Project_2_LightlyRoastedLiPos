@@ -79,6 +79,7 @@ geometry_msgs::msg::TwistStamped mtrx3760_lrl_warehousebot::absAngularController
             std::cout << "      ERROR : " << err << std::endl;
             std::cout << "      RESPONSE : " << response << std::endl;
             
+            
             // send feedback
             auto feedback = std::make_shared<Actuator::Feedback>();
             auto err_n = feedback->err_n;
@@ -237,18 +238,21 @@ geometry_msgs::msg::TwistStamped mtrx3760_lrl_warehousebot::absLinearController:
             std::cout << "      " << "ERROR : " << err << std::endl;
             std::cout << "      " << "RESPONSE : " << response << std::endl;
 
-            // send feedback
-            auto feedback = std::make_shared<Actuator::Feedback>();
-            auto err_n = feedback->err_n;
-            auto err_t = feedback->err_t;
-            err_t = 0.0;
-            err_n = err;
-            controllerGoalHandle->publish_feedback(feedback);
+            if (storedControlState != TARGET_REACHED)
+            {
+                // send feedback
+                auto feedback = std::make_shared<Actuator::Feedback>();
+                auto err_n = feedback->err_n;
+                auto err_t = feedback->err_t;
+                err_t = 0.0;
+                err_n = err;
+                controllerGoalHandle->publish_feedback(feedback);
 
-            // set new actuator values
-            outputCmd.twist.linear.x = response;
+                // set new actuator values
+                outputCmd.twist.linear.x = response;
 
-            break;
+                break;
+            }
         }
 
         case TARGET_REACHED:
@@ -368,7 +372,8 @@ double mtrx3760_lrl_warehousebot::absLinearController::computeResponse(double aE
 
     if (abs(response) <= 0.01)
     {
-        response = 0;
+        // response = 0;
+        storedControlState = TARGET_REACHED;
         std::cout << "  CONTROLLER >>>>> BOT UNABLE TO DRIVE" << std::endl;
     }
 

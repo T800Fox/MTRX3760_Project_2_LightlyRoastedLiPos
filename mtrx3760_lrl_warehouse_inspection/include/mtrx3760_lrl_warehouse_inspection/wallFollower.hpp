@@ -17,10 +17,10 @@ const double POSE_EQUAL_THRESH = 0.15;
 
 
 enum DIRECTION {
-    FORWARD,
-    LEFT,
     BACKWARD,
     RIGHT,
+    FORWARD,
+    LEFT,
 };
 
 enum STATE {
@@ -42,8 +42,10 @@ class wallFollower {
         wallFollower();
         ~wallFollower();
 
-        ActuatorCmd determine_cmd(std::array<bool,4> wall_pres, std::array<float,4> distance);
-        ActuatorCmd calc_refinement(std::array<float,4> distance);
+        ActuatorCmd determine_cmd(std::array<bool,4> wall_pres, std::array<float,4> distance, std::string& debug_buf);
+        ActuatorCmd calc_refinement(std::array<float,4> distance, std::string& debug_buf);
+
+        double query_roc();
 
     private:
         // Member variables
@@ -66,6 +68,8 @@ class wallFollower {
 
         Pose2D curr_pose;
         Pose2D loop_init_pose;
+
+        double avr_roc;
 
 };
 

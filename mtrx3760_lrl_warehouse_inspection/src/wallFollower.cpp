@@ -15,15 +15,17 @@ wallFollower::wallFollower(){
     prev_wall_pres.fill(false);
 
     //Moving average of wall-dist to refine angle (odom innaccuracy)
-    moving_avr_window = 4;
+    moving_avr_window = 3;
     old_avr = 0.0;
+
+    avr_roc = 0.0;
 
 }
 
 wallFollower::~wallFollower(){}
 
 
-ActuatorCmd wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::array<float,4> distance){
+ActuatorCmd wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::array<float,4> distance, std::string& debug_buf){
     apply_refinement = false;
 
     ActuatorCmd actuator_cmd;
@@ -49,6 +51,7 @@ ActuatorCmd wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::array
         case CONTACT_WALL: {
             if (wall_pres[FORWARD]){
                 //Wall is in contact - rotate to align with wall then enter main logic state
+                debug_buf.append("Contacted wall - turning!!\n");
 
                 prev_at_init_pose = true; //Flag to avoid instant loop-completion
                 loop_init_pose = curr_pose;
@@ -66,8 +69,9 @@ ActuatorCmd wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::array
                 state = AWAIT_LOGIC;
 
             } else{
+                debug_buf.append("Driving forwards... no wall detected\n");
 
-                set_vel(0.2);
+                set_vel(0.15);
             
             }
             break;
@@ -105,7 +109,7 @@ ActuatorCmd wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::array
             } else{
                 //Moving forwards:
                 //RCLCPP_INFO(this->get_logger(), "Moving forwards!!");
-                set_vel(0.2); 
+                set_vel(0.15); 
 
                 //Flag for later called refinement method
                 apply_refinement = true;
@@ -206,7 +210,7 @@ ActuatorCmd wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::array
                 break;
 
             case 1:
-                rotate_ang(-M_PI_2); //Rotate right 90deg;
+                rotate_ang(-90.0); //Rotate right 90deg;
                 break;
 
             case 2:
@@ -230,13 +234,18 @@ ActuatorCmd wallFollower::determine_cmd(std::array<bool,4> wall_pres, std::array
 }
 
 
+double wallFollower::query_roc(){
+    return avr_roc;
+}
 
 
-ActuatorCmd wallFollower::calc_refinement(std::array<float,4> distance){
+ActuatorCmd wallFollower::calc_refinement(std::array<float,4> distance, std::string& debug_buf){
     ActuatorCmd actuator_cmd{actuator_cmd.MODE_VEL_ANGULAR, 0.0};
 
     //Only apply refinement if flagged from main actuation cmd
-    if (!apply_refinement){return actuator_cmd;}
+    if (!apply_refinement){
+        debug_buf.append("NO REFINEMENT!\n");
+        return actuator_cmd;}
     
     moving_avr_buf.push_back(distance[RIGHT]);
 
@@ -253,13 +262,13 @@ ActuatorCmd wallFollower::calc_refinement(std::array<float,4> distance){
         //Avoid refining on first pass - old_avr=0 (garbage value)
         if (old_avr){
             //Calculate rate of change (lidar dt = time between updates)
-            double avr_roc = (new_avr - old_avr) / LIDAR_DT;
+            avr_roc = (new_avr - old_avr) / LIDAR_DT;
 
             //Small-angle aprox of angular error
             double error = avr_roc / STABLE_VEL;
 
             //Publish correctional vel prop to error
-            refinement = -error * 3.5;
+            refinement = -error * 4.5;
         }
 
         old_avr = new_avr;

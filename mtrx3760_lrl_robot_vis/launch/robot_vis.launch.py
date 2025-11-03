@@ -5,14 +5,14 @@ from launch.actions import ExecuteProcess
 def generate_launch_description():
     return LaunchDescription([
         Node(
-            package='robot_vis',
+            package='mtrx3760_lrl_robot_vis',
             executable='ros2Interface',
             name='ros2_interface_node',
             output='screen'
         ),
 
         ExecuteProcess(
-            cmd=['ros2', 'run', 'robot_vis', 'my_app'],
+            cmd=['ros2', 'run', 'mtrx3760_lrl_robot_vis', 'robot_interface'],
             output='screen'
         )
 

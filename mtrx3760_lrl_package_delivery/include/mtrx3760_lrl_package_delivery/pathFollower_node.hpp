@@ -6,20 +6,21 @@
 #include <cmath>
 #include <deque>
 #include <fstream>
+
+//--ROS Dependancies--
 #include <rclcpp/rclcpp.hpp>
-
 #include "rclcpp_action/rclcpp_action.hpp"
-#include "mtrx3760_lrl_interfaces/action/test.hpp"
-#include "mtrx3760_lrl_actuator/actuator_client.hpp"
-
-//Msgs
+//--ROS Interfaces--
+//-Messages (Custom + Predefined)
 #include <std_msgs/msg/bool.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
-
+//-Services-
 #include "mtrx3760_lrl_interfaces/srv/path_req.hpp"
-
-
-
+//-Actions-
+#include "mtrx3760_lrl_interfaces/action/test.hpp"
+#include "mtrx3760_lrl_interfaces/action/perform_delivery.hpp"
+//-Custom Libraries-
+#include "mtrx3760_lrl_actuator/actuator_client.hpp"
 //Alternate command types enum
 enum CMD_TYPE {
     ROTATE,
@@ -28,6 +29,9 @@ enum CMD_TYPE {
 
 class pathFollower : public rclcpp::Node
 {
+    using PerformDelivery = mtrx3760_lrl_interfaces::action::PerformDelivery;
+    using GoalHandlePerformDelivery = rclcpp_action::ClientGoalHandle<PerformDelivery>;
+
     public:
         pathFollower();
         ~pathFollower();

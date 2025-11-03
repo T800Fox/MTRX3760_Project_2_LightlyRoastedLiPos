@@ -10,7 +10,8 @@ find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(builtin_interfaces REQUIRED)
-find_package(custom_interfaces REQUIRED)
+find_package(mtrx3760_lrl_interfaces REQUIRED)
+find_package(mtrx3760_lrl_warehouse_inspection REQUIRED)
 
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
@@ -26,7 +27,7 @@ include_directories(
     external/libhv/include/hv
     external/imgui
     external/imgui/backends
-    include/mtrx3760_lrl_robot_vis
+    include
 )
 
 # Link SDL2 static library
@@ -61,7 +62,11 @@ ament_export_dependencies(
 
 
 add_executable(ros2Interface src/interface/ros2_interface_node.cpp src/interface/socket.cpp)
-ament_target_dependencies(ros2Interface rclcpp std_msgs geometry_msgs sensor_msgs nav_msgs custom_interfaces)
+ament_target_dependencies(ros2Interface rclcpp 
+                          std_msgs geometry_msgs sensor_msgs nav_msgs 
+                          mtrx3760_lrl_interfaces mtrx3760_lrl_warehouse_inspection)
+                          
+                          
 target_link_libraries(ros2Interface hv_static)
 
 add_executable(robot_interface ${SOURCES} )

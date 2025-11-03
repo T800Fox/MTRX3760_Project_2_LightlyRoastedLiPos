@@ -1,4 +1,4 @@
-#include "visualiser.hpp"
+#include "mtrx3760_lrl_robot_vis/visualiser.hpp"
 
 
 
@@ -22,6 +22,9 @@ Visualiser::Visualiser(SDL_Window *window, SDL_Renderer *renderer)
     ImGui::StyleColorsDark();
     ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer2_Init(renderer);
+    ImGuiIO& io = ImGui::GetIO(); 
+    (void)io;
+    io.FontGlobalScale = 1.5f; 
 
 
     //Active cam
@@ -40,6 +43,21 @@ Visualiser::Visualiser(SDL_Window *window, SDL_Renderer *renderer)
     // Robot components
     robot_body = Rect(Point{0, 0}, 10.0f, Point{138, 178}, GREEN, &cam, renderer, true); //256mm square body
     robot_marker = Rect(Point{0, 0}, 10.0f, Point{20, 80}, GREEN, &cam, renderer, false); //Heading marker
+
+    detected_packages[123] = Package{};
+    detected_packages[123].global_pos = Point{-50,100};
+    detected_packages[123].ID = 123;
+    detected_packages[123].observation_count = 10;
+    
+    detected_packages[312] = Package{};
+    detected_packages[312].global_pos = Point{100,200};
+    detected_packages[312].ID = 312;
+    detected_packages[312].observation_count = 14;
+
+    detected_packages[897] = Package{};
+    detected_packages[897].global_pos = Point{12,69};
+    detected_packages[897].ID = 897;
+    detected_packages[897].observation_count = 12;
 
 }
 
@@ -102,8 +120,9 @@ void Visualiser::update(Point mouse_pos, bool mouse_pressed, int scroll_event){
             
             //If clicked add to list of package requests (shorthand)
             if (mouse_pressed && !prev_press){
-                pack_requests.push_back(PackRequest{ID_index, 0});
+                pack_requests.push_back(PackRequest{ID_index, key, 0});
             }
+            
             break;
         }
 
@@ -111,39 +130,6 @@ void Visualiser::update(Point mouse_pos, bool mouse_pressed, int scroll_event){
     }
 
     prev_press = mouse_pressed;
-
-
-
-
-    
-    json image = socket.query_prev_packet("data_image", true);
-    try {
-        if (!image.empty()){
-
-            const std::string& encoded = image["image_data"];
-            std::vector<unsigned char> raw_bytes(encoded.size());
-            int decoded_len = hv_base64_decode(encoded.c_str(), encoded.size(), raw_bytes.data());
-            raw_bytes.resize(decoded_len);
-
-
-            SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
-                raw_bytes.data(),
-                image["width"].get<int>(),
-                image["height"].get<int>(),
-                24,                               // bits per pixel
-                image["step"].get<int>(),                        // bytes per row
-                0x000000FF, 0x0000FF00, 0x00FF0000, 0
-            );
-
-            texture = SDL_CreateTextureFromSurface(renderer, surface);
-            SDL_FreeSurface(surface);
-        }
-
-    } catch (const std::exception &e) {
-        // This catches json::parse_error, out_of_range, type_error, etc.
-        std::cerr << "[WARN] Dropped bad pose packet: " << e.what() << "\n";
-    }
-
 
 
     //Vis stuff
@@ -203,8 +189,30 @@ void Visualiser::update(Point mouse_pos, bool mouse_pressed, int scroll_event){
             Package package_struct;
             package_struct.ID = package["id"].get<int>();
             package_struct.global_pos = Point{package["pos_x"].get<float>(), package["pos_y"].get<float>()};
-            package_struct.confidence = package["var"].get<double>();
+            package_struct.confidence_radius = package["confidence_radius"].get<double>();
             package_struct.observation_count = package["observation_count"].get<int>();
+            
+            //Read image
+            if (!package["closest_image"].empty() && false){
+                //Decode
+                const std::string& encoded = package["image_data"];
+                std::vector<unsigned char> raw_bytes(encoded.size());
+                int decoded_len = hv_base64_decode(encoded.c_str(), encoded.size(), raw_bytes.data());
+                raw_bytes.resize(decoded_len);
+
+                SDL_Surface* temp_surf = SDL_CreateRGBSurfaceFrom(
+                    raw_bytes.data(),
+                    package["image_width"].get<int>(),
+                    package["image_height"].get<int>(),
+                    24,                               // bits per pixel
+                    package["image_step"].get<int>(),                        // bytes per row
+                    0x000000FF, 0x0000FF00, 0x00FF0000, 0
+                );
+
+                
+                package_struct.closest_image_tex = SDL_CreateTextureFromSurface(renderer, temp_surf);
+                SDL_FreeSurface(temp_surf);
+            }
 
             detected_packages[package_struct.ID] = package_struct; //Umap entry
         }
@@ -243,6 +251,8 @@ void Visualiser::update(Point mouse_pos, bool mouse_pressed, int scroll_event){
         cam.override_pos(robot_body.query_pos());
     }
 }
+
+
 
 void Visualiser::render(){
     //Render actual map ----
@@ -287,6 +297,8 @@ void Visualiser::render_UI(){
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
+
+
     //Render info popup for hovered package
     render_package_data();
 
@@ -321,7 +333,7 @@ void Visualiser::render_UI(){
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.7f, 1.0f, 1.0f)); // hover
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.5f, 0.8f, 1.0f));  // pressed
 
-            if (ImGui::Button("Inspect", ImVec2(60, 20))) { // size in pixels
+            if (ImGui::Button("Inspect", ImVec2(90, 30))) { // size in pixels
                 //Inspect
                 last_request = INSPECT_WAREHOUSE;
             }
@@ -329,7 +341,7 @@ void Visualiser::render_UI(){
 
             if (!has_been_inspected){
                 //Indicate that warehouse hasn't yet been inspected
-                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3, 3));
                 ImGui::SetWindowFontScale(0.9f);  // 80% of normal size
                 ImGui::Text("* Warehouse hasn't been inspected *");
                 ImGui::SetWindowFontScale(1.0f);
@@ -348,16 +360,29 @@ void Visualiser::render_UI(){
             }
 
 
-            ImGui::Dummy(ImVec2(0.0f, 20.0f)); // Vertical separator
+            ImGui::Dummy(ImVec2(0.0f, 30.0f)); // Vertical separator
             ImGui::Text("Deliver Packages");
             ImGui::Separator();
             //Solver settings
             ImGui::Text("Solver parameters:");
+
+
+            // Solver type dropdown
+            int select_index = static_cast<int>(solver_params.solver_type);
+
+            if (ImGui::Combo("Solver Type", 
+                            &select_index, 
+                            solver_params.ui_solver_types.data(), 
+                            solver_params.ui_solver_types.size())) 
+            {
+                solver_params.solver_type = static_cast<SolverParams::SolverType>(select_index);
+            }
+            
             ImGui::SliderFloat("Turn cost", &solver_params.turn_cost, 0.0f, 1.0f);
 
 
             //Selection
-            ImGui::Dummy(ImVec2(0.0f, 20.0f)); // Vertical separator
+            ImGui::Dummy(ImVec2(0.0f, 30.0f)); // Vertical separator
             ImGui::Text("Package selection:");
             display_package_selection();
 
@@ -365,8 +390,8 @@ void Visualiser::render_UI(){
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.7f, 1.0f, 1.0f)); // hover
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.5f, 0.8f, 1.0f));  // pressed
 
-            ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Vertical separator
-            if (ImGui::Button("Request Delivery", ImVec2(140, 20))) { // size in pixels
+            ImGui::Dummy(ImVec2(0.0f, 7.0f)); // Vertical separator
+            if (ImGui::Button("Request Delivery", ImVec2(210, 30))) { // size in pixels
                 last_request = PERFORM_DELIVERY;
             }
             ImGui::PopStyleColor(3);
@@ -380,19 +405,19 @@ void Visualiser::render_UI(){
         }
 
 
-        ImGui::Dummy(ImVec2(0.0f, 20.0f)); // Vertical separator
+        ImGui::Dummy(ImVec2(0.0f, 30.0f)); // Vertical separator
         //Settings 
         if (ImGui::CollapsingHeader("Visualiser Settings", ImGuiTreeNodeFlags_CollapsingHeader)) {
             ImGui::Text("General display:");
             ImGui::Checkbox("Display robot path", &robot_path_en);
             ImGui::Checkbox("Display pose tags", &pose_tag_en);
 
-            ImGui::Dummy(ImVec2(0.0f, 10.0f)); // Vertical separator
+            ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Vertical separator
             ImGui::Text("Map visibility:");
             ImGui::Checkbox("Display SLAM-occupancy", &slam_map_en);
             ImGui::Checkbox("Display wall-follower map", &wall_follower_map_en);
 
-            ImGui::Dummy(ImVec2(0.0f, 10.0f)); // Vertical separator
+            ImGui::Dummy(ImVec2(0.0f, 15.0f)); // Vertical separator
             ImGui::Text("Misc:");
             ImGui::Checkbox("Camera track", &camera_track_en);
 
@@ -440,13 +465,14 @@ void Visualiser::render_package_data(){
         ImGui::Begin("Package Info", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar);
 
         float available_x = ImGui::GetContentRegionAvail().x;
-        ImGui::Image(texture, ImVec2(available_x, available_x * 0.7));
+        ImGui::Image(pkg.closest_image_tex, ImVec2(available_x, available_x * 0.7));
         ImGui::Text("Package ID: %d", pkg.ID);
-        ImGui::Text("Confidence: %.2f", pkg.confidence);
+        ImGui::Text("Confidence radius: %.2f", pkg.confidence_radius);
         ImGui::Text("Observations: %d", pkg.observation_count);
         ImGui::End();
     }
 }
+
 
 void Visualiser::display_package_selection(){
     //Convert package IDs to vector of strings

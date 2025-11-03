@@ -20,6 +20,7 @@ find_package(OpenCV REQUIRED core highgui aruco)
 find_package(cv_bridge REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(mtrx3760_lrl_interfaces REQUIRED)
+find_package(mtrx3760_lrl_warehouse_inspection REQUIRED)
 
 # #---Message Generation---
 # rosidl_generate_interfaces(${PROJECT_NAME}
@@ -48,6 +49,7 @@ ament_export_dependencies(
   tf2 tf2_ros tf2_geometry_msgs
   std_msgs sensor_msgs geometry_msgs
   mtrx3760_lrl_interfaces
+  mtrx3760_lrl_warehouse_inspection
   rosidl_default_runtime)
 
 
@@ -58,7 +60,10 @@ ament_target_dependencies(camera
                             std_msgs sensor_msgs 
                             tf2 tf2_ros tf2_geometry_msgs
                             OpenCV cv_bridge
+                            mtrx3760_lrl_warehouse_inspection
                             mtrx3760_lrl_interfaces)
+
+                            
 target_include_directories(camera PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>

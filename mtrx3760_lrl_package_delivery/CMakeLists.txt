@@ -83,6 +83,20 @@ ament_target_dependencies(pathFollower
                             mtrx3760_lrl_interfaces)
 
 
+add_executable(deliveryController 
+              src/deliveryController_node.cpp
+              src/path_finder/commands.cpp
+              src/path_finder/planning_core.cpp
+              src/path_finder/a_star_planner.cpp
+              src/path_finder/route_solver.cpp
+              src/path_finder/grid_map.cpp)
+
+ament_target_dependencies(deliveryController 
+                            rclcpp rclcpp_action
+                            nav_msgs std_msgs
+                            mtrx3760_lrl_interfaces)
+
+
 # target_link_libraries(pathFollower "$cpp_typesupport_target{}")
 # rosidl_target_interfaces(pathFollower ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
@@ -103,6 +117,7 @@ endif()
 #---Install Targets---
 install(TARGETS
   pathFollower
+  deliveryController
   DESTINATION lib/${PROJECT_NAME}
 )
 

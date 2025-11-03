@@ -7,7 +7,7 @@
 #define MTRX3760_PATH_PLANNER_H
 
 #include <vector>
-#include "grid_map.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/grid_map.h"
 
 class PathPlanner {
 public:

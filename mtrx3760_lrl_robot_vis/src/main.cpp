@@ -2,9 +2,9 @@
 #include <SDL_ttf.h>
 #include <cmath>
 #include <string>
-#include "render_objs.hpp"
-#include "socket.hpp"
-#include "visualiser.hpp"
+#include "mtrx3760_lrl_robot_vis/render_objs.hpp"
+#include "mtrx3760_lrl_robot_vis/socket.hpp"
+#include "mtrx3760_lrl_robot_vis/visualiser.hpp"
 
 
 
@@ -19,8 +19,8 @@ int main(int argc, char* argv[]) {
     TTF_Init(); //Init text renderer
 
 
-    const int WINDOW_WIDTH = 1280;
-    const int WINDOW_HEIGHT = 720;
+    const int WINDOW_WIDTH = 1920;
+    const int WINDOW_HEIGHT = 1080;
 
     SDL_Window* window = SDL_CreateWindow("Warehouse Robot Interface",
                                           SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,

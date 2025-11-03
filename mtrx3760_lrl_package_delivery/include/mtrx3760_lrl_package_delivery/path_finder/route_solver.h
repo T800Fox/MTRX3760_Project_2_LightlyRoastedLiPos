@@ -12,9 +12,10 @@
 
 #include <vector>
 #include <map>
+#include <cmath> 
 #include <utility>
-#include "grid_map.h"
-#include "path_planner.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/grid_map.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/path_planner.h"
 
 struct Item {
     std::string name;

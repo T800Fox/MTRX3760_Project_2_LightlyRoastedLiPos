@@ -36,6 +36,10 @@ class inspectWarehouseController : public rclcpp::Node
         //Ros subs
         rclcpp::Subscription<mtrx3760_lrl_warehouse_inspection::msg::WallDist>::SharedPtr wall_dist_sub_;
         rclcpp::Subscription<mtrx3760_lrl_warehouse_inspection::msg::Pose>::SharedPtr curr_pose_sub_;
+        rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+
+        //Pubs
+        rclcpp::Publisher<mtrx3760_lrl_warehouse_inspection::msg::Pose>::SharedPtr refined_pose_pub_;
 
         //Action client and server
         rclcpp_action::Server<InspectWarehouse>::SharedPtr inspection_action_server_;
@@ -50,10 +54,14 @@ class inspectWarehouseController : public rclcpp::Node
 
         ActuatorClientWrapper actuator_client_wrapper_;
 
+        Pose2D refined_pose;
         Pose2D curr_pose;
 
         rclcpp_action::Client<Actuator>::SharedPtr test_client_ptr_;
         rclcpp::TimerBase::SharedPtr delayed_wrapper_init_timer_;
+
+        
+        double offset_x, offset_y, rot_offset;
 
 
 

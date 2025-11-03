@@ -22,9 +22,8 @@ struct ActuatorCmd {
 class ActuatorClientWrapper {
 
     enum ACTION_STATUS {
-        UNDEFINED = 0,
-        AWAITING_RESPONSE = 1,
-        AWAITING_RESULT = 2
+        UNAVAILABLE = 0,
+        AVAILABLE = 1
     };
 
     public:
@@ -44,7 +43,7 @@ class ActuatorClientWrapper {
                 std::function<void(const GoalHandleActuator::WrappedResult&)> result_cb);
 
 
-        bool is_awaiting_result();
+        bool is_accepting_goals();
 
 
     private:

@@ -6,7 +6,7 @@
 #ifndef MTRX3760_A_STAR_PLANNER_H
 #define MTRX3760_A_STAR_PLANNER_H
 
-#include "path_planner.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/path_planner.h"
 
 // A* implementation (4-connected, Manhattan) with optional turn penalty
 class AStarPlanner final : public PathPlanner {

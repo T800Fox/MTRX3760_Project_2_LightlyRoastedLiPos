@@ -18,6 +18,7 @@
 #include <opencv2/aruco.hpp>
 
 #include "mtrx3760_lrl_interfaces/msg/marker_detection.hpp"
+#include "mtrx3760_lrl_warehouse_inspection/msg/pose.hpp"
 
 using MarkerDetection = mtrx3760_lrl_interfaces::msg::MarkerDetection;
 
@@ -103,6 +104,10 @@ class ArucoCamera : public Camera
         
         // Tag size in meters (adjust this based on your actual ArUco tag size)
         double tag_size;
+
+        mtrx3760_lrl_warehouse_inspection::msg::Pose::SharedPtr curr_pose;
+        rclcpp::Subscription<mtrx3760_lrl_warehouse_inspection::msg::Pose>::SharedPtr curr_pose_sub_;
+        
 };
 
 #endif

@@ -7,11 +7,11 @@
 #include <unordered_map>
 #include <string>
 #include <iostream>
-#include "render_objs.hpp"
+#include "mtrx3760_lrl_robot_vis/render_objs.hpp"
 #include "imgui.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
-#include "socket.hpp"
+#include "mtrx3760_lrl_robot_vis/socket.hpp"
 #include "base64.h"
 
 
@@ -46,27 +46,39 @@ enum RequestUI{
 
 
 struct Package{
-    uint32_t ID;
+    int ID;
     Point global_pos;
-    float64_t confidence;
-    uint32_t observation_count;
-    //Maybe cell pos
-    //Maybe a photo of the package
+    double confidence_radius;
+    int observation_count;
+    SDL_Texture* closest_image_tex;
 };
 
 
 
-//Delivery request
+//Delivery request (within UI)
 struct PackRequest {
-    int IDindex;
+    int IDindex; //Don't serialise (for UI)
+    uint32_t ID;
     int priority;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(PackRequest, IDindex, priority); //for json serialize
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(PackRequest, ID, priority); //for json serialize
 };
+
 
 struct SolverParams {
+    //Strings associated with solver types for UI selection
+    static constexpr std::array<const char*, 2> ui_solver_types = {
+        "A-star",
+        "Theta-star (any angle)" // Use standard case/spelling
+    };
+
+    //Serialize ---
     float turn_cost;
-    //
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SolverParams, turn_cost); //for json serialize
+    enum SolverType {
+        A_STAR,
+        THETA,
+    } solver_type;
+    
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SolverParams, turn_cost, solver_type); 
 };
 
 
@@ -133,7 +145,7 @@ class Visualiser{
         
         SDL_Texture* texture;
 
- 
+
 };
 
 #endif

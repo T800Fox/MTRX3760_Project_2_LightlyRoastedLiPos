@@ -1,6 +1,5 @@
-#include "ros2_interface_node.hpp"
+#include "mtrx3760_lrl_robot_vis/ros2_interface_node.hpp"
 
-ros_data shared_data; 
 
 
 Ros2Interface::Ros2Interface()
@@ -16,11 +15,11 @@ Ros2Interface::Ros2Interface()
 
 
   // Initialise subscribers
-  odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-    "/odom", \
+  refined_pose_sub_ = this->create_subscription<mtrx3760_lrl_warehouse_inspection::msg::Pose>(
+    "/refined_pose", \
     rclcpp::SensorDataQoS(), \
     std::bind(
-      &Ros2Interface::odom_callback, \
+      &Ros2Interface::refined_pose_callback, \
       this, \
       std::placeholders::_1));
 
@@ -30,21 +29,16 @@ Ros2Interface::Ros2Interface()
       std::bind(&Ros2Interface::map_callback, this, std::placeholders::_1)
   );
 
-  package_detection_sub_ = this->create_subscription<custom_interfaces::msg::PackageDetection>(
-      "/package_detection", 10,
+  package_detection_sub_ = this->create_subscription<MarkerDetection>(
+      "/detections/raw", 10,
       std::bind(&Ros2Interface::package_detection_callback, this, std::placeholders::_1)
   );
 
-  wall_follower_seg_sub_ = this->create_subscription<custom_interfaces::msg::LineSeg>(
+  wall_follower_seg_sub_ = this->create_subscription<mtrx3760_lrl_interfaces::msg::LineSeg>(
       "/wall_follower_seg", 10,
       std::bind(&Ros2Interface::wall_follower_seg_callback, this, std::placeholders::_1)
   );
 
-
-  image_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
-      "/image_raw", 10,
-      std::bind(&Ros2Interface::image_callback, this, std::placeholders::_1)
-  );
 
   
 
@@ -63,30 +57,16 @@ Ros2Interface::Ros2Interface()
 Ros2Interface::~Ros2Interface(){}
 
 
-void Ros2Interface::odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg){
-
-  //Convert from Quaternions
-  double x = msg->pose.pose.orientation.x;
-  double y = msg->pose.pose.orientation.y;
-  double z = msg->pose.pose.orientation.z;
-  double w = msg->pose.pose.orientation.w;
-
-  double siny_cosp = 2.0 * (w * z + x * y);
-  double cosy_cosp = 1.0 - 2.0 * (y * y + z * z);
-  double rot = 180/3.14159 * std::atan2(siny_cosp, cosy_cosp);
-
+void Ros2Interface::refined_pose_callback(const mtrx3760_lrl_warehouse_inspection::msg::Pose::SharedPtr msg){
   //Construct json packet
   json j = json{
       {"type", "data_pose"},
-      {"x", (float) msg->pose.pose.position.x * 1000},
-      {"y", (float) msg->pose.pose.position.y * 1000},
-      {"rot", -rot}
+      {"x", (float) msg->x * 1000},
+      {"y", (float) msg->y * 1000},
+      {"rot", -(float) msg->theta}
   };
   
   interface_socket.send_json(j);
-
-   //   RCLCPP_INFO(this->get_logger(), "Odom callback!");
-
 }
 
 
@@ -107,16 +87,34 @@ void Ros2Interface::map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr m
 }
 
 
-void Ros2Interface::package_detection_callback(const custom_interfaces::msg::PackageDetection::SharedPtr msg){
+void Ros2Interface::package_detection_callback(const MarkerDetection::SharedPtr msg){
+  
+  std::string encoded;
+  if (msg->closest_image.data.size() && false){
+    //Encode image
+    std::vector<char> encoded_buf(((msg->closest_image.data.size() + 2) / 3) * 4 + 1);
+    hv_base64_encode(msg->closest_image.data.data(), msg->closest_image.data.size(), encoded_buf.data());
+    encoded = encoded_buf.data();
+  }
+
+  //RCLCPP_INFO(this->get_logger(), "Recieved package detection!!!!!");
+
   //Construct json packet
   json j = json{
     {"type", "data_package_detection"},
     {"id", msg->id},
-    {"pos_x", msg->global_pos.x * 1000},
-    {"pos_y", msg->global_pos.y * 1000},
-    {"var", msg->confidence},
+    {"pos_x", msg->global_position.x * 1000},
+    {"pos_y", msg->global_position.y * 1000},
+    {"confidence_radius", msg->covariance_radius * 1000},
     {"observation_count", msg->observation_count},
+    //{"image_data", encoded},
+    {"image_width", msg->closest_image.width},
+    {"image_height", msg->closest_image.height},
+    {"image_step", msg->closest_image.step},
   };
+
+
+
   interface_socket.send_json(j);
 
   RCLCPP_INFO(this->get_logger(), "Package detection: ID %d", msg->id);
@@ -124,31 +122,7 @@ void Ros2Interface::package_detection_callback(const custom_interfaces::msg::Pac
 }
 
 
-
-void Ros2Interface::image_callback(const sensor_msgs::msg::Image::SharedPtr msg){
-  std::vector<char> encoded_buf(((msg->data.size() + 2) / 3) * 4 + 1);
-  hv_base64_encode(msg->data.data(), msg->data.size(), encoded_buf.data());
-  std::string encoded(encoded_buf.data());
-
-  json j = json{
-    {"type", "data_image"},
-    {"image_data", encoded},
-    {"width", msg->width},
-    {"height", msg->height},
-    {"step", msg->step}
-  };
-
-  interface_socket.send_json(j);
-
-  RCLCPP_INFO(this->get_logger(), "Image");
-}
-
-
-
-
-
-
-void Ros2Interface::wall_follower_seg_callback(const custom_interfaces::msg::LineSeg::SharedPtr msg){
+void Ros2Interface::wall_follower_seg_callback(const mtrx3760_lrl_interfaces::msg::LineSeg::SharedPtr msg){
     //Construct json packet
   json j = json{
     {"type", "data_wall_follower_seg"},
@@ -175,9 +149,11 @@ void Ros2Interface::update_callback(){
   packet = interface_socket.query_prev_packet("srv_perform_delivery", true);
   if (!packet.empty()){
     //Perform delivery request was recieevd
-    std::vector<PackRequest> parsed_requests = packet["package_requests"].get<std::vector<PackRequest>>();
+    std::vector<PackRequest> package_requests = packet["package_requests"].get<std::vector<PackRequest>>();
     SolverParams solver_params = packet["solver_params"].get<SolverParams>();
 
+    //CONSTRUCT ACTION GOAL AND SEND
+    
     RCLCPP_INFO(this->get_logger(), "Perform delivery:");
   }
 

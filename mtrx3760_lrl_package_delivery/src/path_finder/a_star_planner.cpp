@@ -3,7 +3,7 @@
 // Author: Lightly Roasted Lipos
 // Description: A* implementation (4-connected, Manhattan) with optional turn penalty
 
-#include "X/path_finder/a_star_planner.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/a_star_planner.h"
 #include <queue>
 #include <limits>
 #include <cmath>

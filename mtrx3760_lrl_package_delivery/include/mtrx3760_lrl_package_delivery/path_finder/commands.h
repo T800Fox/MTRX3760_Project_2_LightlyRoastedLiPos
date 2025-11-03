@@ -9,7 +9,7 @@
 
 #include <vector>
 #include <optional>
-#include "grid_map.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/grid_map.h"
 
 enum class CmdType { Rotate, Translate };
 

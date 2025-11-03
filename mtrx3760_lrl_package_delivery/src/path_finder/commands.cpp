@@ -3,7 +3,7 @@
 // Author: Lightly Roasted Lipos
 // Description: Build nav-friendly command stream from a stitched cell path.
 
-#include "X/path_finder/commands.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/commands.h"
 #include <cmath>
 
 int headingFromDelta(int dr, int dc) {

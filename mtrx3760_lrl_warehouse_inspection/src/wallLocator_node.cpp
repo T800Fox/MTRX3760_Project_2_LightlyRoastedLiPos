@@ -50,9 +50,10 @@ void wallLocator::wall_dist_publisher(const sensor_msgs::msg::LaserScan::SharedP
   } 
 
   wall_dist_pub_->publish(wall_dist);
-  
+  RCLCPP_INFO(this->get_logger(), "Wall-pres: B:%d R:%d F:%d L:%d", wall_dist.wall_pres[0], wall_dist.wall_pres[1], 
+                                                                    wall_dist.wall_pres[2], wall_dist.wall_pres[3]);
 
-}
+} 
 
 /*******************************************************************************
 ** Main

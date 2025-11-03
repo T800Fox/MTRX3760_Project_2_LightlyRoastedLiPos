@@ -1,4 +1,4 @@
-#include "render_objs.hpp"
+#include "mtrx3760_lrl_robot_vis/render_objs.hpp"
 
 
 float point_distance(const Point & p1, const Point & p2){

@@ -10,10 +10,10 @@
 #include <optional>
 #include <string>
 
-#include "grid_map.h"
-#include "a_star_planner.h"
-#include "route_solver.h"
-#include "commands.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/grid_map.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/a_star_planner.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/route_solver.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/commands.h"
 
 class PlanningCore {
 public:

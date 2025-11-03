@@ -56,8 +56,7 @@ void pathFollower::follow_path_callback(
 
 void pathFollower::update(){
     //If stationary, pass next command
-    RCLCPP_INFO(this->get_logger(), "ahhh");
-    if (actuator_client_wrapper_.is_awaiting_result()){return;}
+    if (!actuator_client_wrapper_.is_accepting_goals()){return;}
 
     RCLCPP_INFO(this->get_logger(), "Next cmd!!!");
 

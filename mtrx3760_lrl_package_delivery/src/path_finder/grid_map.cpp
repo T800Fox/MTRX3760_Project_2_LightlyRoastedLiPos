@@ -3,7 +3,7 @@
 // Author: Lightly Roasted Lipos
 // Description: Lightweight occupancy grid + world<->grid transforms.
 
-#include "X/path_finder/grid_map.h"
+#include "mtrx3760_lrl_package_delivery/path_finder/grid_map.h"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
