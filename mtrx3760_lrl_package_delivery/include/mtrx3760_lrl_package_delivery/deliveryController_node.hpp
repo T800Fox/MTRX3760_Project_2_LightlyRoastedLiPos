@@ -69,7 +69,7 @@ class DeliveryController : public rclcpp::Node {
         // Dictionary to map packages and their priorities
         std::unordered_map<uint32_t, Package> tag_dictionary_;
 
-          // Path finder member
+        // Path finder member
         PlanningCore path_finder;
 
         // Callback function for package detection
