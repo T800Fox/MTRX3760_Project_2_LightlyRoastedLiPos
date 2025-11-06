@@ -31,15 +31,16 @@ using MarkerDetection = mtrx3760_lrl_interfaces::msg::MarkerDetection;
 
 // Running statistics per marker ID (incremental mean and variance)
 // Uses Welford's algorithm for online variance calculation
-struct RunningMarkerStats {
-    int32_t count = 0;
-    double mean_x = 0.0;
-    double mean_y = 0.0;
-    double mean_z = 0.0;
-    double m2_x = 0.0; // Sum of squared deltas for variance (Welford's algorithm)
-    double m2_y = 0.0;
-    double m2_z = 0.0;
-    double mean_confidence = 0.0;
+class RunningMarkerStats {
+    public:
+        int32_t count = 0;
+        double mean_x = 0.0;
+        double mean_y = 0.0;
+        double mean_z = 0.0;
+        double m2_x = 0.0; // Sum of squared deltas for variance (Welford's algorithm)
+        double m2_y = 0.0;
+        double m2_z = 0.0;
+        double mean_confidence = 0.0;
 };
 
 // ============================================================================
