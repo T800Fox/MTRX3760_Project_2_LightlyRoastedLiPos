@@ -29,7 +29,6 @@
 #include "mtrx3760_lrl_package_delivery/path_finder/commands.h"
 
 
-
 // ============================================================================
 // Delivery Controller Class
 // ============================================================================
@@ -50,6 +49,9 @@ class DeliveryController : public rclcpp::Node {
         // Server for perform delivery action
         rclcpp_action::Server<PerformDelivery>::SharedPtr delivery_action_server_;
 
+        // Control flag for accepting new goals
+        bool is_accepting_goals;
+
         // Client to handle path request service response from Path Follower Node
         rclcpp::Client<mtrx3760_lrl_interfaces::srv::PathReq>::SharedPtr path_request_client_;
 
@@ -58,6 +60,17 @@ class DeliveryController : public rclcpp::Node {
         rclcpp::Subscription<mtrx3760_lrl_interfaces::msg::Pose>::SharedPtr robot_pose_sub_;
         rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr occupancy_grid_subscriber_; 
 
+        // Most recently received occupancy grid
+        nav_msgs::msg::OccupancyGrid::SharedPtr most_recent_map;
+
+        // Robot current pose
+        mtrx3760_lrl_interfaces::msg::Pose::SharedPtr curr_pose;
+
+        // Dictionary to map packages and their priorities
+        std::unordered_map<uint32_t, Package> tag_dictionary_;
+
+          // Path finder member
+        PlanningCore path_finder;
 
         // Callback function for package detection
         void package_detection_callback(const mtrx3760_lrl_interfaces::msg::MarkerDetection::SharedPtr msg); 
@@ -67,21 +80,6 @@ class DeliveryController : public rclcpp::Node {
 
         // Send path request to path-follower
         void send_path_request(std::vector<MotionCmd> cmds);
-
-        // Most recently received occupancy grid
-        nav_msgs::msg::OccupancyGrid::SharedPtr most_recent_map;
-
-        // Path finder member
-        PlanningCore path_finder;
-
-        // Robot current pose
-        mtrx3760_lrl_interfaces::msg::Pose::SharedPtr curr_pose;
-
-        // Control flag for accepting new goals
-        bool is_accepting_goals;
-
-        // Dictionary to map packages and their priorities
-        std::unordered_map<uint32_t, Package> tag_dictionary_;
 
         // Struct to store robot position
         struct Point{
@@ -94,8 +92,6 @@ class DeliveryController : public rclcpp::Node {
             uint32_t ID;
             Point global_pos;
         };
-
-
 };
 
 #endif // INCLUDE_mtrx3760_lrl_package_delivery_DELIVERYCONTROLLER_NODE_HPP_
