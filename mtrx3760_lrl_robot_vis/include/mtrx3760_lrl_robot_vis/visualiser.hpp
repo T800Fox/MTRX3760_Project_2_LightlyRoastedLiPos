@@ -145,6 +145,9 @@ class Visualiser{
         
         SDL_Texture* texture;
 
+        float perc;
+
+
 
 };
 

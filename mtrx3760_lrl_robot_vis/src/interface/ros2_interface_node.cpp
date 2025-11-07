@@ -39,6 +39,11 @@ Ros2Interface::Ros2Interface()
       std::bind(&Ros2Interface::wall_follower_seg_callback, this, std::placeholders::_1)
   );
 
+   battery_sub_ = this->create_subscription<sensor_msgs::msg::BatteryState>(
+      "/battery_state", 10,
+      std::bind(&Ros2Interface::battery_callback, this, std::placeholders::_1)
+  );
+
 
   
 
@@ -135,6 +140,20 @@ void Ros2Interface::wall_follower_seg_callback(const mtrx3760_lrl_interfaces::ms
 
   RCLCPP_INFO(this->get_logger(), "Wall follower line-seg");
 }
+
+
+
+void Ros2Interface::battery_callback(const sensor_msgs::msg::BatteryState::SharedPtr msg){
+   json j = json{
+      {"type", "data_battery"},
+      {"perc", msg->percentage},
+  };
+  
+  interface_socket.send_json(j);
+}
+
+
+
 
 
 void Ros2Interface::update_callback(){

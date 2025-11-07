@@ -11,7 +11,10 @@ mtrx3760_lrl_warehousebot::controllerCoordinator::controllerCoordinator()
 //---------------------------------------------
 mtrx3760_lrl_warehousebot::controllerCoordinator::~controllerCoordinator()
 {
-    currentControlMethod = PASSIVE;
+    if (currentControlMethod != PASSIVE)
+    {
+        delete currentController;
+    }
 }
 //---------------------------------------------
 bool mtrx3760_lrl_warehousebot::controllerCoordinator::controllerRunning()
@@ -71,37 +74,37 @@ void mtrx3760_lrl_warehousebot::controllerCoordinator::fireUpController(const st
     {
         switch (goalData->mode)
         {
-        case ABS_ANGULAR:
-        {
-            std::cout << "[Controller Coordinator] : " << "Firing up ABS_ANGULAR" << std::endl;
-            currentController = new mtrx3760_lrl_warehousebot::absAngularController(goal_handle);
-            currentControlMethod = ABS_ANGULAR;
+            case ABS_ANGULAR:
+            {
+                std::cout << "[Controller Coordinator] : " << "Firing up ABS_ANGULAR" << std::endl;
+                currentController = new mtrx3760_lrl_warehousebot::absAngularController(goal_handle);
+                currentControlMethod = ABS_ANGULAR;
 
-            // makes sure it stays still after, just in case the robot is moving when it starts the rountine
-            passiveAngularVelocity = 0.0;
-            passiveLinearVelocity = 0.0;
+                // makes sure it stays still after, just in case the robot is moving when it starts the routine
+                passiveAngularVelocity = 0.0;
+                passiveLinearVelocity = 0.0;
 
-            break;
-        }
+                break;
+            }
 
-        case ABS_LINEAR:
-        {
-            std::cout << "[Controller Coordinator] : " << "Firing up ABS_LINEAR" << std::endl;
-            currentController = new mtrx3760_lrl_warehousebot::absLinearController(goal_handle);
-            currentControlMethod = ABS_LINEAR;
+            case ABS_LINEAR:
+            {
+                std::cout << "[Controller Coordinator] : " << "Firing up ABS_LINEAR" << std::endl;
+                currentController = new mtrx3760_lrl_warehousebot::absLinearController(goal_handle);
+                currentControlMethod = ABS_LINEAR;
 
-            // makes sure it stays still after, just in case the robot is moving when it starts the rountine
-            passiveAngularVelocity = 0.0;
-            passiveLinearVelocity = 0.0;
+                // makes sure it stays still after, just in case the robot is moving when it starts the routine
+                passiveAngularVelocity = 0.0;
+                passiveLinearVelocity = 0.0;
 
-            break;
-        }
+                break;
+            }
 
-        default:
-        {
-            std::cout << "[Controller Coordinator]: " << "Invalid contoller specifed -> " << goalData->mode << std::endl;
-            break;
-        }
+            default:
+            {
+                std::cout << "[Controller Coordinator]: " << "Invalid contoller specifed -> " << goalData->mode << std::endl;
+                break;
+            }
         }
     }
     else
@@ -122,42 +125,42 @@ geometry_msgs::msg::TwistStamped mtrx3760_lrl_warehousebot::controllerCoordinato
 
     switch (currentControlMethod)
     {
-    case ABS_ANGULAR:
-    {
-        std::cout << "[Controller Coordinator] : " << "Feeding TF to Angular..." << std::endl;
-        outputCmd = currentController->respondToStimulus(msg);
-
-        // cleanup if complete
-        if (outputCmd.twist.linear.x == 0.0 and outputCmd.twist.angular.z == 0.0)
+        case ABS_ANGULAR:
         {
-            currentControlMethod = PASSIVE;
-            delete currentController;
+            std::cout << "[Controller Coordinator] : " << "Feeding TF to Angular..." << std::endl;
+            outputCmd = currentController->respondToStimulus(msg);
+
+            // cleanup if complete
+            if (outputCmd.twist.linear.x == 0.0 and outputCmd.twist.angular.z == 0.0)
+            {
+                currentControlMethod = PASSIVE;
+                delete currentController;
+            }
+            break;
         }
-        break;
-    }
 
-    case ABS_LINEAR:
-    {
-        std::cout << "[Controller Coordinator] : " << "Feeding TF to Linear..." << std::endl;
-        outputCmd = currentController->respondToStimulus(msg);
-
-        // cleanup if complete
-        if (outputCmd.twist.linear.x == 0.0 and outputCmd.twist.angular.z == 0.0)
+        case ABS_LINEAR:
         {
-            currentControlMethod = PASSIVE;
-            delete currentController;
+            std::cout << "[Controller Coordinator] : " << "Feeding TF to Linear..." << std::endl;
+            outputCmd = currentController->respondToStimulus(msg);
+
+            // cleanup if complete
+            if (outputCmd.twist.linear.x == 0.0 and outputCmd.twist.angular.z == 0.0)
+            {
+                currentControlMethod = PASSIVE;
+                delete currentController;
+            }
+            break;
         }
-        break;
-    }
 
-    case PASSIVE:
-    {
-        std::cout << "[Controller Coordinator] : " << "Pushing Passive Values" << std::endl;
+        case PASSIVE:
+        {
+            std::cout << "[Controller Coordinator] : " << "Pushing Passive Values" << std::endl;
 
-        outputCmd.twist.linear.x = passiveLinearVelocity;
-        outputCmd.twist.angular.z = passiveAngularVelocity;
-        break;
-    }
+            outputCmd.twist.linear.x = passiveLinearVelocity;
+            outputCmd.twist.angular.z = passiveAngularVelocity;
+            break;
+        }
     }
 
     return outputCmd;
