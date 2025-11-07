@@ -171,8 +171,6 @@ geometry_msgs::msg::TwistStamped mtrx3760_lrl_warehousebot::absLinearController:
     std::cout << "Linear State Machine" << std::endl;
     geometry_msgs::msg::TwistStamped outputCmd;
 
-    // check for abort?
-
     // checking for completion done in compute response, 
     // when it gets soo small the motors will do nothing output velocity is set to 0  
 
