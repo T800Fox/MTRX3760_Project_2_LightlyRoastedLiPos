@@ -30,22 +30,6 @@
 
 #include "mtrx3760_lrl_interfaces/action/test.hpp"
 
-//---Enums---
-enum CONTROL_STATE {
-    AWAITING_START_COND = 0,
-    RUNNING = 1,
-    TARGET_REACHED = 2,
-    COMPLETE = 3,
-    ABORT = -1
-};
-
-struct coord
-{
-    double x;
-    double y;
-};
-
-
 //---Constants---
 const double pi = 3.14159265359;
 const double MAX_ANG_VEL = 0.8;
@@ -58,81 +42,99 @@ namespace mtrx3760_lrl_warehousebot
     class controller
     {
         public:
+            // namespace abbreviations
             using Actuator = mtrx3760_lrl_interfaces::action::Test;
             using GoalHandleActuator = rclcpp_action::ServerGoalHandle<Actuator>;
 
+            // intialises operation variable to safe values, no destructor as no dynamic memory to look after
             controller(const std::shared_ptr<GoalHandleActuator> goal_handle);
-            ~controller();
             
+            // the interface where any controller's next stamped twist response can be produced
             virtual geometry_msgs::msg::TwistStamped respondToStimulus(geometry_msgs::msg::TransformStamped aTransformMsg) = 0;
 
         protected:
             //--Helper Methods--
+            // was used by angular and, angular+linear controller. only used by angular but may be used by other future controllers
             double transformToHeading(geometry_msgs::msg::TransformStamped aTransformMsg);
 
+            //--Enums--
+            // denotes the states of operation for a controller
+            enum CONTROL_STATE {
+                AWAITING_START_COND = 0,
+                RUNNING = 1,
+                TARGET_REACHED = 2,
+                COMPLETE = 3,
+                ABORT = -1
+            };
 
             //--Variables--
-            std::shared_ptr<GoalHandleActuator> controllerGoalHandle;
-            int storedControlState;
-
-            double targetValue;
+            std::shared_ptr<GoalHandleActuator> controllerGoalHandle;   // makes goal handle accessible to inheritors
+            int storedControlState;                                     // all controllers have a controll state
     };
     
+    // class to encapsulate a controller that offsets the turtlebot's heading by a given number of radians
     class absAngularController : public controller
     {
         public:
-            // using Actuator = lrl_action_interface::action::Test;
-            // using GoalHandleActuator = rclcpp_action::ServerGoalHandle<Actuator>;   
             
             absAngularController(const std::shared_ptr<GoalHandleActuator> goal_handle);
-            ~absAngularController();
 
+            // run through one loop of control with a given transform
             geometry_msgs::msg::TwistStamped respondToStimulus(geometry_msgs::msg::TransformStamped aTransformMsg) override;
 
         private:
             //--Helper Methods--
-            double generateTargetValue(geometry_msgs::msg::TransformStamped aTransformMsg);
-            double generateErrorTerm(geometry_msgs::msg::TransformStamped aTransformMsg, bool doJump);
-            double computeResponse(double aErrorVal);
-
+            // assuming this transform is the first one, pull out the heading and use it to compute the target
+            double generateTargetValue(geometry_msgs::msg::TransformStamped aTransformMsg); 
+            // get the size of the error, doJump will apply a correction if the heading moves over the -pi / pi boundary           
+            double generateErrorTerm(geometry_msgs::msg::TransformStamped aTransformMsg, bool doJump); 
+            // calculate the proportional response to the error given, ensures no values above max
+            double computeResponse(double aErrorVal); 
 
             //--Variables--
-            double p = 0.75;
-            double completionTol = 0.1; // TODO:  move to better spot!!!!
-            double lastError = pi / 2.0;
+            //-state-
+            double targetValue;             // heading angle to reach (rad.)
+            // used when path takes robot over -pi / pi boundary, if it's around this point and the error has a massive spike the controller knows not to freak out
+            double lastError = pi / 2.0;    
+            //-tuning-
+            // may be feasible to controller to update it's own trim values? decided to place them in the controller with default values
+            double p = 0.75;                // response to error magnitude
+            double completionTol = 0.1;     // how close to get before considering the actuation complete (rad.)
     };
 
+    // class that encapsulates a controller that translates the turtlebot forwards a given distance
     class absLinearController : public controller
     {
         public:
-            // using Actuator = lrl_action_interface::action::Test;
-            // using GoalHandleActuator = rclcpp_action::ServerGoalHandle<Actuator>;
-
-            absLinearController(const std::shared_ptr<GoalHandleActuator> goal_handle);
-            ~absLinearController();
-
+            // extracts and stores distance to drive from goal handle, no need for destructor as no dynamic memory
+            absLinearController(const std::shared_ptr<GoalHandleActuator> goal_handle);         
+            // run through one loop of control with a given transform
             geometry_msgs::msg::TwistStamped respondToStimulus(geometry_msgs::msg::TransformStamped aTransformMsg) override;
 
         private:
-            //--Helper Methods--
-            coord generateTargetCoord(geometry_msgs::msg::TransformStamped aTransformMsg);
-            coord transformToCoord(geometry_msgs::msg::TransformStamped aTransformMsg);
-            double generateErrorTerm(geometry_msgs::msg::TransformStamped aTransformMsg);
-            double computeResponse(double aErrorVal);
-            double computeHeadingToTarget(geometry_msgs::msg::TransformStamped aTransformMsg);
+            //--Enums--
+            // abstraction of cartesian coordinates
+            struct coord
+            {
+                double x;
+                double y;
+            };
 
+             //--Helper Methods--    
+            coord transformToCoord(geometry_msgs::msg::TransformStamped aTransformMsg);         // extracts the coord from a given transform
+            double generateErrorTerm(geometry_msgs::msg::TransformStamped aTransformMsg);       // compares current coord's to starting ar resolves error
+            double computeResponse(double aErrorVal);                                           // from a given error computes a pd response
 
             //--Variables--
-
-            // coord targetCoord;
-            coord startCoord;
-
-            double goalDistance;
-
-            double p = 0.5;
-            double d = 0.2;
-            double completionTol = 0.01;
-            double lastErr;
+            //-state-
+            coord startCoord;       // taken from stamped transform at first tf callback
+            double goalDistance;    // taken from goal handle
+            double lastErr;         // stored during control; approximation of error's derivatrive
+            //-tuning-
+            // may be feasible to controller to update it's own trim values? decided to place them in the controller with default values
+            double p = 0.5;         // response to error size
+            double d = 0.2;         // response to error gradient
+            double completionTol = 0.01;   // smallest velocity to be sent
     };
 };
 

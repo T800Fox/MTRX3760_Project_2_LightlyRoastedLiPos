@@ -11,7 +11,6 @@ mtrx3760_lrl_warehousebot::ActuatorActionServer::ActuatorActionServer() : Node("
     RCLCPP_INFO(this->get_logger(), "Received goal request -> (mode, ang_mag, lin_mag) -> (%d , %.2f)", goal->mode, goal->magnitude);
     (void)uuid;
 
-    
     // couldn't figure out what sort of variable could store the response codes; hence two return points
     if (manager.controllerRunning())
     {
@@ -32,8 +31,6 @@ mtrx3760_lrl_warehousebot::ActuatorActionServer::ActuatorActionServer() : Node("
 
   auto handle_accepted = [this] (const std::shared_ptr<GoalHandleActuator> goal_handle)
   {
-    // this needs to return quickly to avoid blocking the executor,
-    // so we declare a lambda function to be called inside a new thread
     auto execute_in_thread = [this, goal_handle](){return this->execute(goal_handle);};
     std::thread{execute_in_thread}.detach();
   };
@@ -62,6 +59,8 @@ void mtrx3760_lrl_warehousebot::ActuatorActionServer::execute(const std::shared_
 {
   RCLCPP_INFO(this->get_logger(), "Executing goal...");
 
+  // velocity commands need to immedatley update the robot's velocity, 
+  // hence a new TwistStamped is made and published immediatley instead of waiting for a tf callback.
   if (goal_handle->get_goal()->mode == goal_handle->get_goal()->MODE_VEL_LINEAR)
   {
     RCLCPP_INFO(this->get_logger(), "Linear Velocity Command");
@@ -89,6 +88,8 @@ void mtrx3760_lrl_warehousebot::ActuatorActionServer::listen_tf()
 {
   try 
   {
+    // robot was only ever tested with position data from odom, if amcl was used the setup of this would change.
+    // most likely, transforms between amcl and base_footprint would be prefered over one between odom and base_footprint
     geometry_msgs::msg::TransformStamped transformStamped = buffer->lookupTransform("base_footprint", "odom", tf2::TimePointZero); // child, parent
      
     RCLCPP_INFO(this->get_logger(), "Making TF Available to Controllers");

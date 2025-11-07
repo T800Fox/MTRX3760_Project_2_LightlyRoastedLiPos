@@ -11,7 +11,10 @@ mtrx3760_lrl_warehousebot::controllerCoordinator::controllerCoordinator()
 //---------------------------------------------
 mtrx3760_lrl_warehousebot::controllerCoordinator::~controllerCoordinator()
 {
-    currentControlMethod = PASSIVE;
+    if (currentControlMethod != PASSIVE)
+    {
+        delete currentController;
+    }
 }
 //---------------------------------------------
 bool mtrx3760_lrl_warehousebot::controllerCoordinator::controllerRunning()
