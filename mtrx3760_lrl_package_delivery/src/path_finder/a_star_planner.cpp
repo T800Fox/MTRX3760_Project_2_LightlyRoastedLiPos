@@ -1,6 +1,6 @@
 // MTRX3760 2025 Project 2: Warehouse Robot DevKit
 // File: a_star_planner.cpp
-// Author: Lightly Roasted Lipos
+// Author: Oliver Lennox
 // Description: A* implementation (4-connected, Manhattan) with optional turn penalty
 
 #include "mtrx3760_lrl_package_delivery/path_finder/a_star_planner.h"

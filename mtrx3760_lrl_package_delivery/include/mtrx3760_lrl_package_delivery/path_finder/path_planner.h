@@ -1,6 +1,6 @@
 // MTRX3760 2025 Project 2: Warehouse Robot DevKit
 // File: path_planner.h
-// Author: Lightly Roasted Lipos
+// Author: Oliver Lennox
 // Description: Polymorphic path-planning interface.
 
 #ifndef MTRX3760_PATH_PLANNER_H

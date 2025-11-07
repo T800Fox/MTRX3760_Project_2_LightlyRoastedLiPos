@@ -1,6 +1,6 @@
 // MTRX3760 2025 Project 2: Warehouse Robot DevKit
 // File: route_solver.h
-// Author: Lightly Roasted Lipos
+// Author: Oliver Lennox
 // Description: Priority-group mini-TSP solver using a PathPlanner (polymorphic).
 //
 // For each priority (highest first):

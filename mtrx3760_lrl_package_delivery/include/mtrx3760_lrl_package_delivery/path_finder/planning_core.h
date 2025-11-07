@@ -1,5 +1,6 @@
 // MTRX3760 2025 Project 2: Warehouse Robot DevKit
 // File: planning_core.h
+// Author: Oliver Lennox
 // Description: PlanningCore ingests SLAM occupancy maps and item targets,
 //              builds an internal GridMap, plans routes, and outputs commands.
 

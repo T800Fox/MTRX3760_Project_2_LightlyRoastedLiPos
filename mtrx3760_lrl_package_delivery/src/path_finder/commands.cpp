@@ -1,6 +1,6 @@
 // MTRX3760 2025 Project 2: Warehouse Robot DevKit
 // File: commands.cpp
-// Author: Lightly Roasted Lipos
+// Author: Oliver Lennox
 // Description: Build nav-friendly command stream from a stitched cell path.
 
 #include "mtrx3760_lrl_package_delivery/path_finder/commands.h"

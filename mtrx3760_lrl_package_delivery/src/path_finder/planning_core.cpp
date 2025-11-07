@@ -1,24 +1,29 @@
 // MTRX3760 2025 Project 2: Warehouse Robot DevKit
 // File: planning_core.cpp
-// Description: PlanningCore implementation
+// Author: Oliver Lennox
+// Description: Integrates map data, route solving, and command generation into a single planning interface.
 
 #include "mtrx3760_lrl_package_delivery/path_finder/planning_core.h"
 #include <cmath>
 #include <cstdint>
 
+// Initialise map with default resolution and planner with turn weight penalty
 PlanningCore::PlanningCore(double turn_weight_m)
 : map_(0.05), planner_(turn_weight_m) {}
 
+// Link a probability-based SLAM map (0.0–1.0) to GridMap representation
 bool PlanningCore::linkMap(const SlamMapProb& sm)
 {
     return loadFromProb_(sm);
 }
 
+// Link a 0–100 occupancy grid map (ROS format) to GridMap
 bool PlanningCore::linkMap(const SlamMap100& sm)
 {
     return loadFrom100_(sm);
 }
 
+// Expand occupied cells by a safety radius (in meters) to prevent collisions
 void PlanningCore::inflate(double radius_m)
 {
     if (radius_m <= 0.0) return;
@@ -26,11 +31,13 @@ void PlanningCore::inflate(double radius_m)
     map_.inflateByCells(rad_cells);
 }
 
+// Define robot starting location in grid coordinates
 void PlanningCore::setStartCell(int row, int col)
 {
     start_ = {row, col};
 }
 
+// Convert item positions from world millimetres into internal item structures
 void PlanningCore::setItems(const std::vector<ItemTarget>& items_mm)
 {
     items_.clear();
@@ -41,6 +48,7 @@ void PlanningCore::setItems(const std::vector<ItemTarget>& items_mm)
     }
 }
 
+// Run the RouteSolver using the chosen PathPlanner and return the full delivery route
 bool PlanningCore::plan(std::vector<GridMap::Cell>& outFullPath,
                         std::vector<GroupReport>& outReports)
 {
@@ -54,12 +62,14 @@ bool PlanningCore::plan(std::vector<GridMap::Cell>& outFullPath,
     return true;
 }
 
+// Convert the computed path into Rotate/Translate motion commands for actuators
 std::vector<MotionCmd> PlanningCore::buildCommands(std::optional<int> fixedInitialHeading) const
 {
     if (!lastFullPath_.has_value()) return {};
     return buildCommandsFromPath(map_, lastFullPath_.value(), fixedInitialHeading);
 }
 
+// Internal: translate probability SLAM map to binary occupancy map
 bool PlanningCore::loadFromProb_(const SlamMapProb& sm)
 {
     if (sm.rows <= 0 || sm.cols <= 0) return false;
@@ -81,6 +91,7 @@ bool PlanningCore::loadFromProb_(const SlamMapProb& sm)
     return map_.loadFromBinary(bin, sm.rows, sm.cols, sm.resolution_m);
 }
 
+// Internal: translate 0–100 occupancy grid map to binary occupancy map
 bool PlanningCore::loadFrom100_(const SlamMap100& sm)
 {
     if (sm.rows <= 0 || sm.cols <= 0) return false;

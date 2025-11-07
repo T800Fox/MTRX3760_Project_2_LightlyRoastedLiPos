@@ -1,6 +1,6 @@
 // MTRX3760 2025 Project 2: Warehouse Robot DevKit
 // File: commands.h
-// Author: Lightly Roasted Lipos
+// Author: Oliver Lennox
 // Description: Build nav-friendly command stream from a stitched cell path.
 //        Rotate: value=0 right, 1 left, 2 uturn, 3 straight; Translate: meters.
 

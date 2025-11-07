@@ -1,15 +1,17 @@
 // MTRX3760 2025 Project 2: Warehouse Robot DevKit
 // File: route_solver.cpp
-// Author: Lightly Roasted Lipos
-// Description: Priority-group mini-TSP solver using a PathPlanner (polymorphic).
+// Author: Oliver Lennox
+// Description: Computes optimal delivery order and stitched paths across multiple waypoints using a PathPlanner.
 
 #include "mtrx3760_lrl_package_delivery/path_finder/route_solver.h"
 #include <algorithm>
 #include <limits>
 
+// Constructor links to an existing map and planner implementation (e.g., A* or Theta*)
 RouteSolver::RouteSolver(const GridMap& map, const PathPlanner& planner)
 : m_map(map), m_planner(planner) {}
 
+// Precompute all pairwise paths ("legs") and their distances between start and item locations
 void RouteSolver::buildLegTable(GridMap::Cell start,
                                 const std::vector<GridMap::Cell>& itemCells,
                                 std::vector<std::vector<LegInfo>>& legs) const
@@ -20,7 +22,7 @@ void RouteSolver::buildLegTable(GridMap::Cell start,
     auto getCell = [&](int idx)->GridMap::Cell {
         return (idx == 0) ? start : itemCells[idx - 1];
     };
-
+    // Plan route between each pair using provided PathPlanner
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             legs[i][j].fromIdx = i;
@@ -37,6 +39,7 @@ void RouteSolver::buildLegTable(GridMap::Cell start,
     }
 }
 
+// Solve the mini travelling-salesman problem for one priority group by testing all permutations
 bool RouteSolver::bestTourOver(const std::vector<int>& nodeIds,
                                const std::vector<std::vector<LegInfo>>& legs,
                                std::vector<int>& outOrder,
@@ -66,7 +69,7 @@ bool RouteSolver::bestTourOver(const std::vector<int>& nodeIds,
             if (!std::isfinite(back)) ok = false;
             else cost += back;
         }
-
+        // Keep the best order (lowest total distance) for this group   
         if (ok && cost < best) {
             best = cost;
             bestSeq.clear();
@@ -82,6 +85,7 @@ bool RouteSolver::bestTourOver(const std::vector<int>& nodeIds,
     return true;
 }
 
+// High-level routine that groups items by priority, solves each group’s route, and stitches results
 bool RouteSolver::solvePriorityGroups(GridMap::Cell start,
                                       const std::vector<Item>& items,
                                       std::vector<GridMap::Cell>& outFullPath,
@@ -99,6 +103,7 @@ bool RouteSolver::solvePriorityGroups(GridMap::Cell start,
 
     // Precompute all legs
     std::vector<std::vector<LegInfo>> legs;
+    // Generate the distance matrix once for all item pairs
     buildLegTable(start, itemCells, legs);
 
     // Group items by priority (highest first)
@@ -106,7 +111,7 @@ bool RouteSolver::solvePriorityGroups(GridMap::Cell start,
     for (int i = 0; i < static_cast<int>(items.size()); ++i)
         groups[items[i].priority].push_back(i + 1); // node id (1..N)
 
-    // For each group, solve best mini-tour and stitch
+    // Solve each priority group separately (higher priority first)
     for (const auto& [prio, nodeIds] : groups) {
         if (nodeIds.empty()) continue;
 
@@ -116,7 +121,7 @@ bool RouteSolver::solvePriorityGroups(GridMap::Cell start,
             return false;
         }
 
-        // Stitch this group's path
+        // Stitch each leg into a continuous full-path for all items
         for (size_t k = 0; k + 1 < order.size(); ++k) {
             const auto& seg = legs[order[k]][order[k+1]].path;
             if (outFullPath.empty()) outFullPath.insert(outFullPath.end(), seg.begin(), seg.end());

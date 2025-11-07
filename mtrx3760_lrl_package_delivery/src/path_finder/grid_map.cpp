@@ -1,6 +1,6 @@
 // MTRX3760 2025 Project 2: Warehouse Robot DevKit
 // File: grid_map.cpp
-// Author: Lightly Roasted Lipos
+// Author: Oliver Lennox
 // Description: Lightweight occupancy grid + world<->grid transforms.
 
 #include "mtrx3760_lrl_package_delivery/path_finder/grid_map.h"
