@@ -2,7 +2,8 @@
 // File: actuator_action_server
 // Author(s): Jeremy Fox
 //
-// Plumbing
+// Setting up a ROS2 Action Server that listens to the /tf and can publish to /cmd_vel.
+// Feeds tf data into a controllerCoordinator, and gets out TwistStamped messages to publish to /cmd_vel
 #ifndef MTRX3760_LRL_WAREHOUSEBOT_ACTUATOR_ACTION_SERVER_NODE_HPP_
 #define MTRX3760_LRL_WAREHOUSEBOT_ACTUATOR_ACTION_SERVER_NODE_HPP_
 
@@ -43,24 +44,23 @@ namespace mtrx3760_lrl_warehousebot
             using Actuator = mtrx3760_lrl_interfaces::action::Test;
             using GoalHandleActuator = rclcpp_action::ServerGoalHandle<Actuator>;
 
-            ActuatorActionServer();
+            ActuatorActionServer();                                                         // no destructor as no dynamic memory in class
 
         private:
             //--Private Methods--
-            void execute(const std::shared_ptr<GoalHandleActuator> goal_handle);
-            void listen_tf();   // called by the timer; if tf transform can be done, feeds into controller and publishes velocity response
+            void execute(const std::shared_ptr<GoalHandleActuator> goal_handle);            // called when proceeding with a goal
+            // called by the timer; if tf transform can be done, feeds into controller and publishes velocity response
+            void listen_tf();   
 
             //--ROS Variables--
-            rclcpp_action::Server<Actuator>::SharedPtr action_server_;
-            
-            rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr cmd_vel_pub_ ;
-
-            std::shared_ptr<tf2_ros::Buffer> buffer;
-            std::shared_ptr<tf2_ros::TransformListener> listener;
+            rclcpp_action::Server<Actuator>::SharedPtr action_server_;                      // shared pointer to actuator action server
+            rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr cmd_vel_pub_ ;   // velocity commands to turtlebot 
+            std::shared_ptr<tf2_ros::Buffer> buffer;                                        // to be pulled from when TF required
+            std::shared_ptr<tf2_ros::TransformListener> listener;                           // recieves TF
             rclcpp::TimerBase::SharedPtr timer;
 
             //--Variables--
-            controllerCoordinator manager = controllerCoordinator();
+            controllerCoordinator manager = controllerCoordinator();                        // interfacing bewteen ros layer and current controller
     }; 
 } ;
 

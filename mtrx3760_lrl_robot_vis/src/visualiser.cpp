@@ -45,17 +45,17 @@ Visualiser::Visualiser(SDL_Window *window, SDL_Renderer *renderer)
     robot_marker = Rect(Point{0, 0}, 10.0f, Point{20, 80}, GREEN, &cam, renderer, false); //Heading marker
 
     detected_packages[123] = Package{};
-    detected_packages[123].global_pos = Point{-50,100};
+    detected_packages[123].global_pos = Point{-500,400};
     detected_packages[123].ID = 123;
     detected_packages[123].observation_count = 10;
     
     detected_packages[312] = Package{};
-    detected_packages[312].global_pos = Point{100,200};
+    detected_packages[312].global_pos = Point{600,-800};
     detected_packages[312].ID = 312;
     detected_packages[312].observation_count = 14;
 
     detected_packages[897] = Package{};
-    detected_packages[897].global_pos = Point{12,69};
+    detected_packages[897].global_pos = Point{1200,69};
     detected_packages[897].ID = 897;
     detected_packages[897].observation_count = 12;
 
@@ -130,6 +130,19 @@ void Visualiser::update(Point mouse_pos, bool mouse_pressed, int scroll_event){
     }
 
     prev_press = mouse_pressed;
+
+
+     //Query battery packet
+    json battery = socket.query_prev_packet("data_battery");
+    try {
+        if (!battery.empty()){
+            perc = battery["perc"].get<float>();
+        }
+
+    } catch (const std::exception &e) {
+        // This catches json::parse_error, out_of_range, type_error, etc.
+        std::cerr << "[WARN] Dropped bad battery packet: " << e.what() << "\n";
+    }
 
 
     //Vis stuff
@@ -283,6 +296,17 @@ void Visualiser::render(){
 
     robot_body.render();
     robot_marker.render();
+
+    //Display battery health:
+    SDL_Rect battery_container_rect = {cam.query_window_dim().x-50-200, 50, 200, cam.query_window_dim().y - 50*2};
+    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+    SDL_RenderFillRect(renderer, &battery_container_rect);
+
+    SDL_Rect battery_main_rect = {cam.query_window_dim().x -200 + 10, 50 + (cam.query_window_dim().y - 50*2) * perc, 160, (cam.query_window_dim().y - 50*2) * (1-perc)};
+    SDL_SetRenderDrawColor(renderer, static_cast<int>(perc * 255), static_cast<int>((1-perc) * 255), 20, 255);
+    SDL_RenderFillRect(renderer, &battery_main_rect);
+
+
 
 
     //Render UI (and allow ImGUI to update relevant state variables)
