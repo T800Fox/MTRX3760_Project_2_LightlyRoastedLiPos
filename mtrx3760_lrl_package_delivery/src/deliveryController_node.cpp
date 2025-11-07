@@ -190,18 +190,6 @@ void DeliveryController::delivery_action_execute(const std::shared_ptr<GoalHandl
     // Set delivery items
     std::vector<PlanningCore::ItemTarget> items; 
 
-    for (const auto& pack : goal->package_requests) 
-    {
-        items.push_back(PlanningCore::ItemTarget
-        {
-            "ItemA", 
-            tag_dictionary_[pack.id].global_pos.x * 1000,
-            tag_dictionary_[pack.id].global_pos.y * 1000, 
-            'A',
-            pack.priority
-        });
-    }
-    
     // Provide items to path-finder
     path_finder.setItems(items);
 
